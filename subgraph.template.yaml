@@ -1,0 +1,24 @@
+specVersion: 0.0.2
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum/contract
+    name: MicroCredit
+    network: {{network}}
+    source:
+      address: "{{MicroCredit}}"
+      abi: MicroCredit
+      startBlock: {{startBlock}}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.5
+      language: wasm/assemblyscript
+      entities:
+        - Borrower
+      abis:
+        - name: MicroCredit
+          file: ./abis/MicroCredit.json
+      eventHandlers:
+        - event: BorrowerRepay(indexed address,uint256)
+          handler: handleBorrowerRepay
+      file: ./src/mappings/micro-credit.ts

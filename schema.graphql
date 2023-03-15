@@ -1,0 +1,9 @@
+"""
+MicroCredit Borrower
+"""
+type Borrower @entity {
+  """
+  borrower id
+  """
+  id: ID!
+}

@@ -1,0 +1,40 @@
+{
+    "name": "subgraph-micro-credit",
+    "license": "Apache-2.0",
+    "engines": {
+        "node": "18.x"
+    },
+    "scripts": {
+        "codegen": "graph codegen",
+        "build": "graph build",
+        "test": "graph test --version 0.5.4",
+        "create-local": "graph create --node http://localhost:8020/ impactmarket/ubi-management",
+        "remove-local": "graph remove --node http://localhost:8020/ impactmarket/ubi-management",
+        "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 impactmarket/ubi-management",
+        "create:alfajores": "graph create --node $ALFAJORES_GRAPH_NODE_URL impactmarket/subgraph-micro-credit-alfajores",
+        "create:mainnet": "graph create --node $GRAPH_NODE_URL impactmarket/subgraph-micro-credit",
+        "deploy:alfajores": "graph deploy --node $ALFAJORES_GRAPH_NODE_URL --ipfs $IPFS_NODE_URL impactmarket/subgraph-micro-credit-alfajores",
+        "deploy:mainnet": "graph deploy --node $GRAPH_NODE_URL --ipfs $IPFS_NODE_URL impactmarket/subgraph-micro-credit",
+        "prettier": "prettier --write \"./{src,tests}/**/*.ts\"",
+        "prettier:dryrun": "prettier -l \"./{src,tests}/**/*.ts\"",
+        "eslint": "eslint --fix \"./{src,tests}/**/*.ts\" --max-warnings=0",
+        "eslint:dryrun": "eslint \"./{src,tests}/**/*.ts\" --max-warnings=0",
+        "prepare:mainnet:subgraph": "mustache config/mainnet.json subgraph.template.yaml > subgraph.yaml",
+        "prepare:mainnet": "yarn prepare:mainnet:subgraph",
+        "prepare:alfajores:subgraph": "mustache config/alfajores.json subgraph.template.yaml > subgraph.yaml",
+        "prepare:alfajores": "yarn prepare:alfajores:subgraph"
+    },
+    "dependencies": {
+        "@graphprotocol/graph-cli": "0.37.1",
+        "@graphprotocol/graph-ts": "0.29.1",
+        "matchstick-as": "0.5.0"
+    },
+    "devDependencies": {
+        "@babel/core": "7.20.7",
+        "eslint": "8.30.0",
+        "eslint-config-impact-market": "2.0.3",
+        "mustache": "4.2.0",
+        "prettier": "2.8.1",
+        "typescript": "~4.1.6"
+    }
+}
