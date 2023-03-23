@@ -1,21 +1,41 @@
 [
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "borrower",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      }
-    ],
-    "name": "BorrowerRepay",
-    "type": "event"
-  }
+    {
+        "type": "event",
+        "name": "LoanAdded",
+        "inputs": [
+            { "type": "address", "name": "userAddress", "internalType": "address", "indexed": true },
+            { "type": "uint256", "name": "amount", "internalType": "uint256", "indexed": false },
+            { "type": "uint256", "name": "period", "internalType": "uint256", "indexed": false },
+            { "type": "uint256", "name": "dailyInterest", "internalType": "uint256", "indexed": false }
+        ],
+        "anonymous": false
+    },
+    {
+        "type": "event",
+        "name": "LoanClaimed",
+        "inputs": [
+            { "type": "address", "name": "userAddress", "internalType": "address", "indexed": true },
+            { "type": "uint256", "name": "loanId", "internalType": "uint256", "indexed": false }
+        ],
+        "anonymous": false
+    },
+    {
+        "type": "event",
+        "name": "RepaymentAdded",
+        "inputs": [
+            { "type": "address", "name": "userAddress", "internalType": "address", "indexed": true },
+            { "type": "uint256", "name": "loanId", "internalType": "uint256", "indexed": false },
+            { "type": "uint256", "name": "currentDebt", "internalType": "uint256", "indexed": false }
+        ],
+        "anonymous": false
+    },
+    {
+        "type": "event",
+        "name": "UserAddressChanged",
+        "inputs": [
+            { "type": "address", "name": "oldWalletAddress", "internalType": "address", "indexed": true },
+            { "type": "address", "name": "newWalletAddress", "internalType": "address", "indexed": true }
+        ],
+        "anonymous": false
+    }
 ]

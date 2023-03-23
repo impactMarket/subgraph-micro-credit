@@ -14,11 +14,11 @@ dataSources:
       apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
-        - Borrower
+        - MicroCredit
       abis:
         - name: MicroCredit
           file: ./abis/MicroCredit.json
       eventHandlers:
-        - event: BorrowerRepay(indexed address,uint256)
-          handler: handleBorrowerRepay
+        - event: LoanAdded(indexed address,uint256,uint256,uint256)
+          handler: handleLoanAdded
       file: ./src/mappings/micro-credit.ts
