@@ -3,6 +3,7 @@
         "type": "event",
         "name": "LoanAdded",
         "inputs": [
+            { "type": "uint256", "name": "loanId", "internalType": "uint256", "indexed": false },
             { "type": "address", "name": "userAddress", "internalType": "address", "indexed": true },
             { "type": "uint256", "name": "amount", "internalType": "uint256", "indexed": false },
             { "type": "uint256", "name": "period", "internalType": "uint256", "indexed": false },

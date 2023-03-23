@@ -20,6 +20,22 @@ type Borrower @entity {
 }
 
 """
+Loan entity
+"""
+type Loan @entity {
+  # loan id
+  id: ID!
+  # borrower address
+  userAddress: Bytes!
+  # loan amount
+  amount: BigDecimal!
+  # loan period (maturation date)
+  period: Int!
+  # loan interest (in % / day)
+  dailyInterest: BigDecimal!
+}
+
+"""
 MicroCredit global data
 For efficiency reasons, all values are nullable
 """

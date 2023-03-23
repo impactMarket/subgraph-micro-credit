@@ -1,15 +1,38 @@
 /* global changetype */
-// import { Address, BigInt, ethereum } from '@graphprotocol/graph-ts';
-import { BorrowerRepay } from '../../generated/MicroCredit/MicroCredit';
+import { Address, BigDecimal, BigInt, ethereum } from '@graphprotocol/graph-ts';
+import { LoanAdded, LoanClaimed } from '../../generated/MicroCredit/MicroCredit';
 import { newMockEvent } from 'matchstick-as/assembly/defaults';
 
-export function createBorrowerRepayEvent(entity: string): BorrowerRepay {
-    const entityAddedEvent = changetype<BorrowerRepay>(newMockEvent());
+// createLoanAddedEvent
+export function createLoanAddedEvent(loanId: BigInt, userAddress: string, amount: BigInt, period: BigInt, dailyInterest: BigDecimal): LoanAdded {
+    const loanAddedEvent = changetype<LoanAdded>(newMockEvent());
 
-    // entityAddedEvent.parameters = [];
-    // const addressParam = new ethereum.EventParam('entity', ethereum.Value.fromAddress(Address.fromString(entity)));
+    loanAddedEvent.parameters = [];
+    const loanIdParam = new ethereum.EventParam('loanId', ethereum.Value.fromUnsignedBigInt(loanId));
+    const userAddressParam = new ethereum.EventParam('userAddress', ethereum.Value.fromAddress(Address.fromString(userAddress)));
+    const amountParam = new ethereum.EventParam('amount', ethereum.Value.fromUnsignedBigInt(amount));
+    const periodParam = new ethereum.EventParam('period', ethereum.Value.fromUnsignedBigInt(period));
+    const dailyInterestParam = new ethereum.EventParam('dailyInterest', ethereum.Value.fromUnsignedBigInt(BigInt.fromString(dailyInterest.toString())));
 
-    // entityAddedEvent.parameters.push(addressParam);
+    loanAddedEvent.parameters.push(loanIdParam);
+    loanAddedEvent.parameters.push(userAddressParam);
+    loanAddedEvent.parameters.push(amountParam);
+    loanAddedEvent.parameters.push(periodParam);
+    loanAddedEvent.parameters.push(dailyInterestParam);
 
-    return entityAddedEvent;
+    return loanAddedEvent;
+}
+
+// createLoanClaimedEvent
+export function createLoanClaimedEvent(userAddress: string, loanId: BigInt): LoanClaimed {
+    const loanClaimedEvent = changetype<LoanClaimed>(newMockEvent());
+
+    loanClaimedEvent.parameters = [];
+    const userAddressParam = new ethereum.EventParam('userAddress', ethereum.Value.fromAddress(Address.fromString(userAddress)));
+    const loanIdParam = new ethereum.EventParam('loanId', ethereum.Value.fromUnsignedBigInt(loanId));
+
+    loanClaimedEvent.parameters.push(userAddressParam);
+    loanClaimedEvent.parameters.push(loanIdParam);
+
+    return loanClaimedEvent;
 }

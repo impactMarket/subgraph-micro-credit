@@ -1,7 +1,7 @@
-import { Address, BigDecimal, BigInt } from '@graphprotocol/graph-ts';
-import { Asset, MicroCredit } from '../../generated/schema';
+import { Address, BigDecimal } from '@graphprotocol/graph-ts';
+import { Asset, Loan, MicroCredit } from '../../generated/schema';
 import {
-    LoanAdded
+    LoanAdded, LoanClaimed
 } from '../../generated/MicroCredit/MicroCredit';
 
 const cUSD = '0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1';
@@ -18,7 +18,7 @@ export const normalize = (amount: string): BigDecimal =>
  * @param {boolean} isMinus Boolean to indicate if the amount should be subtracted or added
  * @returns {Array<string>} Returns updated array
  */
-function updateAsset(assetId: string, asset: string, amount: BigInt, array: Array<string> | null, isMinus: boolean): Array<string> {
+function updateAsset(assetId: string, asset: string, amount: BigDecimal, array: Array<string> | null, isMinus: boolean): Array<string> {
     let assetUpdated = Asset.load(assetId);
 
     // create asset entity if it doesn't exist
@@ -30,9 +30,9 @@ function updateAsset(assetId: string, asset: string, amount: BigInt, array: Arra
     // update new asset entity data
     assetUpdated.asset = Address.fromString(asset);
     if (isMinus) {
-        assetUpdated.amount = assetUpdated.amount.minus(normalize(amount.toString()));
+        assetUpdated.amount = assetUpdated.amount.minus(amount);
     } else {
-        assetUpdated.amount = assetUpdated.amount.plus(normalize(amount.toString()));
+        assetUpdated.amount = assetUpdated.amount.plus(amount);
     }
 
     let newArray = array;
@@ -51,6 +51,21 @@ function updateAsset(assetId: string, asset: string, amount: BigInt, array: Arra
 }
 
 export function handleLoanAdded(event: LoanAdded): void {
+    // register loan to LoanAdded entity
+    const loan = new Loan(event.params.loanId.toString());
+
+    loan.userAddress = event.params.userAddress;
+    loan.amount = normalize(event.params.amount.toString());
+    loan.period = event.params.period.toI32();
+    loan.dailyInterest = normalize(event.params.dailyInterest.toString());
+
+    loan.save();
+}
+
+export function handleLoanClaimed(event: LoanClaimed): void {
+    // load loan
+    const loan = Loan.load(event.params.loanId.toString())!;
+
     // load or create new global micro credit entity
     let microCredit = MicroCredit.load('0');
 
@@ -65,9 +80,9 @@ export function handleLoanAdded(event: LoanAdded): void {
     const assetDebtId = `debt-${cUSD}-0`;
     const assetLiquidityId = `liquidity-${cUSD}-0`;
 
-    microCredit.borrowed = updateAsset(assetBorrowedId, cUSD, event.params.amount, microCredit.borrowed, false);
-    microCredit.debt = updateAsset(assetDebtId, cUSD, event.params.amount, microCredit.debt, false);
-    microCredit.liquidity = updateAsset(assetLiquidityId, cUSD, event.params.amount, microCredit.liquidity, true);
+    microCredit.borrowed = updateAsset(assetBorrowedId, cUSD, loan.amount, microCredit.borrowed, false);
+    microCredit.debt = updateAsset(assetDebtId, cUSD, loan.amount, microCredit.debt, false);
+    microCredit.liquidity = updateAsset(assetLiquidityId, cUSD, loan.amount, microCredit.liquidity, true);
     microCredit.borrowers += 1;
 
     microCredit.save();

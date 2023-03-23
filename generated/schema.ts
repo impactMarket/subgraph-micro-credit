@@ -93,6 +93,74 @@ export class Borrower extends Entity {
   }
 }
 
+export class Loan extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(id != null, "Cannot save Loan entity without an ID");
+    if (id) {
+      assert(
+        id.kind == ValueKind.STRING,
+        `Entities of type Loan must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+      );
+      store.set("Loan", id.toString(), this);
+    }
+  }
+
+  static load(id: string): Loan | null {
+    return changetype<Loan | null>(store.get("Loan", id));
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value!.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get userAddress(): Bytes {
+    let value = this.get("userAddress");
+    return value!.toBytes();
+  }
+
+  set userAddress(value: Bytes) {
+    this.set("userAddress", Value.fromBytes(value));
+  }
+
+  get amount(): BigDecimal {
+    let value = this.get("amount");
+    return value!.toBigDecimal();
+  }
+
+  set amount(value: BigDecimal) {
+    this.set("amount", Value.fromBigDecimal(value));
+  }
+
+  get period(): i32 {
+    let value = this.get("period");
+    return value!.toI32();
+  }
+
+  set period(value: i32) {
+    this.set("period", Value.fromI32(value));
+  }
+
+  get dailyInterest(): BigDecimal {
+    let value = this.get("dailyInterest");
+    return value!.toBigDecimal();
+  }
+
+  set dailyInterest(value: BigDecimal) {
+    this.set("dailyInterest", Value.fromBigDecimal(value));
+  }
+}
+
 export class MicroCredit extends Entity {
   constructor(id: string) {
     super();
