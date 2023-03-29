@@ -1,5 +1,5 @@
 /* global changetype */
-import { Address, BigDecimal, BigInt, ethereum } from '@graphprotocol/graph-ts';
+import { Address, BigInt, ethereum } from '@graphprotocol/graph-ts';
 import { LoanAdded, LoanClaimed } from '../../generated/MicroCredit/MicroCredit';
 import { newMockEvent } from 'matchstick-as/assembly/defaults';
 
@@ -9,7 +9,7 @@ export function createLoanAddedEvent(
     loanId: BigInt,
     amount: BigInt,
     period: BigInt,
-    dailyInterest: BigDecimal
+    dailyInterest: BigInt
 ): LoanAdded {
     const loanAddedEvent = changetype<LoanAdded>(newMockEvent());
 
@@ -23,7 +23,7 @@ export function createLoanAddedEvent(
     const periodParam = new ethereum.EventParam('period', ethereum.Value.fromUnsignedBigInt(period));
     const dailyInterestParam = new ethereum.EventParam(
         'dailyInterest',
-        ethereum.Value.fromUnsignedBigInt(BigInt.fromString(dailyInterest.toString()))
+        ethereum.Value.fromUnsignedBigInt(dailyInterest)
     );
 
     loanAddedEvent.parameters.push(userAddressParam);

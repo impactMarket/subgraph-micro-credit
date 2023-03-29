@@ -21,4 +21,6 @@ dataSources:
       eventHandlers:
         - event: LoanAdded(indexed address,uint256,uint256,uint256,uint256)
           handler: handleLoanAdded
+        - event: LoanClaimed(indexed address,uint256)
+          handler: handleLoanClaimed
       file: ./src/mappings/micro-credit.ts

@@ -60,7 +60,8 @@ export function handleLoanAdded(event: LoanAdded): void {
 
     loan.userAddress = event.params.userAddress;
     loan.amount = normalize(event.params.amount.toString());
-    loan.period = event.params.period.toI32();
+    // TODO: readd when new contract is deployed
+    // loan.period = event.params.period.toI32();
     loan.dailyInterest = normalize(event.params.dailyInterest.toString());
 
     loan.save();

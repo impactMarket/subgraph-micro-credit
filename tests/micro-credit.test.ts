@@ -13,8 +13,8 @@ test('[handleLoanClaimed] register and claim', () => {
         userAddress[0],
         BigInt.fromI32(1),
         toToken('10'),
-        BigInt.fromI32(6),
-        BigDecimal.fromString('0.12').times(BigDecimal.fromString('1000000000000000000'))
+        BigInt.fromI32(3600 * 24 * 30 * 6),
+        BigInt.fromString(BigDecimal.fromString('0.12').times(BigDecimal.fromString('1000000000000000000')).toString())
     );
 
     handleLoanAdded(loanAddedEvent);
@@ -35,8 +35,8 @@ test('[handleLoanAdded] register', () => {
         userAddress[0],
         BigInt.fromI32(1),
         toToken('10'),
-        BigInt.fromI32(6),
-        BigDecimal.fromString('0.12').times(BigDecimal.fromString('1000000000000000000'))
+        BigInt.fromI32(3600 * 24 * 30 * 6),
+        BigInt.fromString(BigDecimal.fromString('0.12').times(BigDecimal.fromString('1000000000000000000')).toString())
     );
 
     handleLoanAdded(loanAddedEvent);

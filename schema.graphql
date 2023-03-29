@@ -30,7 +30,7 @@ type Loan @entity {
   # loan amount
   amount: BigDecimal!
   # loan period (maturation date)
-  period: Int!
+  # period: Int!
   # loan interest (in % / day)
   dailyInterest: BigDecimal!
 }

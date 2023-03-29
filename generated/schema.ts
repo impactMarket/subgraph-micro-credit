@@ -142,15 +142,6 @@ export class Loan extends Entity {
     this.set("amount", Value.fromBigDecimal(value));
   }
 
-  get period(): i32 {
-    let value = this.get("period");
-    return value!.toI32();
-  }
-
-  set period(value: i32) {
-    this.set("period", Value.fromI32(value));
-  }
-
   get dailyInterest(): BigDecimal {
     let value = this.get("dailyInterest");
     return value!.toBigDecimal();
