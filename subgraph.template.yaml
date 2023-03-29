@@ -19,6 +19,6 @@ dataSources:
         - name: MicroCredit
           file: ./abis/MicroCredit.json
       eventHandlers:
-        - event: LoanAdded(uint256,indexed address,uint256,uint256,uint256)
+        - event: LoanAdded(indexed address,uint256,uint256,uint256,uint256)
           handler: handleLoanAdded
       file: ./src/mappings/micro-credit.ts

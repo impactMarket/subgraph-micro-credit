@@ -1,5 +1,5 @@
 import { BigDecimal, BigInt } from '@graphprotocol/graph-ts';
-import { assert, clearStore, logStore, test } from 'matchstick-as/assembly/index';
+import { assert, clearStore, test } from 'matchstick-as/assembly/index';
 import { createLoanAddedEvent, createLoanClaimedEvent } from './utils/micro-credit';
 import { handleLoanAdded, handleLoanClaimed } from '../src/mappings/micro-credit';
 import { toToken, userAddress } from './utils/contants';
@@ -9,7 +9,7 @@ export { handleLoanAdded, handleLoanClaimed };
 test('register microcredit global data', () => {
     clearStore();
 
-    const loanAddedEvent = createLoanAddedEvent(BigInt.fromI32(1), userAddress[0], toToken('10'), BigInt.fromI32(6), BigDecimal.fromString('0.12').times(BigDecimal.fromString('1000000000000000000')));
+    const loanAddedEvent = createLoanAddedEvent(userAddress[0], BigInt.fromI32(1), toToken('10'), BigInt.fromI32(6), BigDecimal.fromString('0.12').times(BigDecimal.fromString('1000000000000000000')));
 
     handleLoanAdded(loanAddedEvent);
 

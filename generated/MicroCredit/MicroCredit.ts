@@ -23,12 +23,12 @@ export class LoanAdded__Params {
     this._event = event;
   }
 
-  get loanId(): BigInt {
-    return this._event.parameters[0].value.toBigInt();
+  get userAddress(): Address {
+    return this._event.parameters[0].value.toAddress();
   }
 
-  get userAddress(): Address {
-    return this._event.parameters[1].value.toAddress();
+  get loanId(): BigInt {
+    return this._event.parameters[1].value.toBigInt();
   }
 
   get amount(): BigInt {
