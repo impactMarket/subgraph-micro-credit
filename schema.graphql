@@ -1,3 +1,14 @@
+type Asset @entity {
+  """
+  {{ key }}-{{ tokenAddress }}-{{ dayId }} for MicroCredit
+  """
+  id: ID!
+  # asset
+  asset: Bytes!
+  # amount (normalized)
+  amount: BigDecimal!
+}
+
 """
 MicroCredit Borrower
 """
@@ -6,4 +17,46 @@ type Borrower @entity {
   borrower id
   """
   id: ID!
+}
+
+"""
+Loan entity
+"""
+type Loan @entity {
+  # loan id
+  id: ID!
+  # borrower address
+  userAddress: Bytes!
+  # loan amount
+  amount: BigDecimal!
+  # loan period (maturation date)
+  # period: Int!
+  # loan interest (in % / day)
+  dailyInterest: BigDecimal!
+}
+
+"""
+MicroCredit global data
+For efficiency reasons, all values are nullable
+"""
+type MicroCredit @entity {
+  # id: 0 is for global data, otherwise, {dayId}
+  id: ID!
+
+  # amount borrowed in each currency
+  borrowed: [Asset!]
+  # debt amount in each currency
+  debt: [Asset!]
+  # amount repaid in each currency
+  repaid: [Asset!]
+  # interest in each currency
+  interest: [Asset!]
+
+  # number of active borrowers (users that haven't fully repaid their loan)
+  borrowers: Int
+  # number of loans totally repaid
+  repayments: Int
+
+  # estimated liquidity available in each currency
+  liquidity: [Asset!]
 }
