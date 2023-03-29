@@ -6,7 +6,7 @@ import { toToken, userAddress } from './utils/contants';
 
 export { handleLoanAdded, handleLoanClaimed };
 
-test('register microcredit global data', () => {
+test('[handleLoanClaimed] register and claim', () => {
     clearStore();
 
     const loanAddedEvent = createLoanAddedEvent(userAddress[0], BigInt.fromI32(1), toToken('10'), BigInt.fromI32(6), BigDecimal.fromString('0.12').times(BigDecimal.fromString('1000000000000000000')));
@@ -22,4 +22,17 @@ test('register microcredit global data', () => {
     assert.fieldEquals('Asset', 'borrowed-0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1-0', 'amount', '10');
 });
 
-// tood: test handleLoanClaimed like test above
+test('[handleLoanAdded] register', () => {
+    clearStore();
+
+    const loanAddedEvent = createLoanAddedEvent(userAddress[0], BigInt.fromI32(1), toToken('10'), BigInt.fromI32(6), BigDecimal.fromString('0.12').times(BigDecimal.fromString('1000000000000000000')));
+
+    handleLoanAdded(loanAddedEvent);
+
+    // assert Loan entity
+    assert.fieldEquals('Loan', '1', 'userAddress', userAddress[0]);
+    assert.fieldEquals('Loan', '1', 'amount', '10');
+
+
+    assert.entityCount('MicroCredit', 0);
+});
