@@ -12,11 +12,4 @@ const toToken = (amount: string): BigInt => BigInt.fromString(amount).times(BigI
 const normalize = (amount: string): BigDecimal =>
     BigDecimal.fromString(amount).div(BigDecimal.fromString('1000000000000000000'));
 
-
-export {
-    userAddress,
-    fiveCents,
-    cUSDAddress,
-    toToken,
-    normalize
-};
+export { userAddress, fiveCents, cUSDAddress, toToken, normalize };

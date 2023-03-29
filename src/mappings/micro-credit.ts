@@ -1,8 +1,6 @@
 import { Address, BigDecimal } from '@graphprotocol/graph-ts';
 import { Asset, Loan, MicroCredit } from '../../generated/schema';
-import {
-    LoanAdded, LoanClaimed
-} from '../../generated/MicroCredit/MicroCredit';
+import { LoanAdded, LoanClaimed } from '../../generated/MicroCredit/MicroCredit';
 
 const cUSD = '0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1';
 
@@ -18,7 +16,13 @@ export const normalize = (amount: string): BigDecimal =>
  * @param {boolean} isMinus Boolean to indicate if the amount should be subtracted or added
  * @returns {Array<string>} Returns updated array
  */
-function updateAsset(assetId: string, asset: string, amount: BigDecimal, array: Array<string> | null, isMinus: boolean): Array<string> {
+function updateAsset(
+    assetId: string,
+    asset: string,
+    amount: BigDecimal,
+    array: Array<string> | null,
+    isMinus: boolean
+): Array<string> {
     let assetUpdated = Asset.load(assetId);
 
     // create asset entity if it doesn't exist
