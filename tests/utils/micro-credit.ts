@@ -9,7 +9,8 @@ export function createLoanAddedEvent(
     loanId: BigInt,
     amount: BigInt,
     period: BigInt,
-    dailyInterest: BigInt
+    dailyInterest: BigInt,
+    claimDeadline: BigInt
 ): LoanAdded {
     const loanAddedEvent = changetype<LoanAdded>(newMockEvent());
 
@@ -25,12 +26,17 @@ export function createLoanAddedEvent(
         'dailyInterest',
         ethereum.Value.fromUnsignedBigInt(dailyInterest)
     );
+    const claimDeadlineParam = new ethereum.EventParam(
+        'claimDeadline',
+        ethereum.Value.fromUnsignedBigInt(claimDeadline)
+    );
 
     loanAddedEvent.parameters.push(userAddressParam);
     loanAddedEvent.parameters.push(loanIdParam);
     loanAddedEvent.parameters.push(amountParam);
     loanAddedEvent.parameters.push(periodParam);
     loanAddedEvent.parameters.push(dailyInterestParam);
+    loanAddedEvent.parameters.push(claimDeadlineParam);
 
     return loanAddedEvent;
 }

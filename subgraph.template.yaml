@@ -19,7 +19,7 @@ dataSources:
         - name: MicroCredit
           file: ./abis/MicroCredit.json
       eventHandlers:
-        - event: LoanAdded(indexed address,uint256,uint256,uint256,uint256)
+        - event: LoanAdded(indexed address,uint256,uint256,uint256,uint256,uint256)
           handler: handleLoanAdded
         - event: LoanClaimed(indexed address,uint256)
           handler: handleLoanClaimed
