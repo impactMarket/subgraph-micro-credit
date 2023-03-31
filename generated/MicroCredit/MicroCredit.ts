@@ -42,6 +42,10 @@ export class LoanAdded__Params {
   get dailyInterest(): BigInt {
     return this._event.parameters[4].value.toBigInt();
   }
+
+  get claimDeadline(): BigInt {
+    return this._event.parameters[5].value.toBigInt();
+  }
 }
 
 export class LoanClaimed extends ethereum.Event {
@@ -87,8 +91,12 @@ export class RepaymentAdded__Params {
     return this._event.parameters[1].value.toBigInt();
   }
 
-  get currentDebt(): BigInt {
+  get repaymentAmount(): BigInt {
     return this._event.parameters[2].value.toBigInt();
+  }
+
+  get currentDebt(): BigInt {
+    return this._event.parameters[3].value.toBigInt();
   }
 }
 

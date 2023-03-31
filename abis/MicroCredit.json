@@ -7,7 +7,8 @@
             { "type": "uint256", "name": "loanId", "internalType": "uint256", "indexed": false },
             { "type": "uint256", "name": "amount", "internalType": "uint256", "indexed": false },
             { "type": "uint256", "name": "period", "internalType": "uint256", "indexed": false },
-            { "type": "uint256", "name": "dailyInterest", "internalType": "uint256", "indexed": false }
+            { "type": "uint256", "name": "dailyInterest", "internalType": "uint256", "indexed": false },
+            { "type": "uint256", "name": "claimDeadline", "internalType": "uint256", "indexed": false }
         ],
         "anonymous": false
     },
@@ -26,6 +27,7 @@
         "inputs": [
             { "type": "address", "name": "userAddress", "internalType": "address", "indexed": true },
             { "type": "uint256", "name": "loanId", "internalType": "uint256", "indexed": false },
+            { "type": "uint256", "name": "repaymentAmount", "internalType": "uint256", "indexed": false },
             { "type": "uint256", "name": "currentDebt", "internalType": "uint256", "indexed": false }
         ],
         "anonymous": false
