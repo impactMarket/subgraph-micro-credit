@@ -1,6 +1,6 @@
-import { Address, BigDecimal } from '@graphprotocol/graph-ts';
-import { Asset, Loan, MicroCredit } from '../../generated/schema';
-import { LoanAdded, LoanClaimed } from '../../generated/MicroCredit/MicroCredit';
+import { Address, BigDecimal, store } from '@graphprotocol/graph-ts';
+import { Asset, Borrower, Loan, MicroCredit } from '../../generated/schema';
+import { LoanAdded, LoanClaimed, UserAddressChanged } from '../../generated/MicroCredit/MicroCredit';
 
 const cUSD = '0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1';
 
@@ -70,6 +70,14 @@ export function handleLoanAdded(event: LoanAdded): void {
 export function handleLoanClaimed(event: LoanClaimed): void {
     // load loan
     const loan = Loan.load(event.params.loanId.toString())!;
+    let borrower = Borrower.load(loan.userAddress.toHexString());
+
+    if (!borrower) {
+        // create borrower entity
+        borrower = new Borrower(loan.userAddress.toHexString());
+        
+        borrower.loans = new Array<string>();
+    }
 
     // load or create new global micro credit entity
     let microCredit = MicroCredit.load('0');
@@ -90,7 +98,27 @@ export function handleLoanClaimed(event: LoanClaimed): void {
     microCredit.liquidity = updateAsset(assetLiquidityId, cUSD, loan.amount, microCredit.liquidity, true);
     microCredit.borrowers += 1;
 
+    // update borrower entity data
+    const borrowerLoans = borrower.loans;
+
+    borrowerLoans.push(event.params.loanId.toString());
+    borrower.loans = borrowerLoans;
+
     microCredit.save();
+    borrower.save();
 
     // TBA: update borrower entity
+}
+
+// update Borrower entity id
+export function handleUserAddressChanged(event: UserAddressChanged): void {
+    const borrowerOldAccount = Borrower.load(event.params.oldWalletAddress.toHex())!;
+    const borrowerNewAccount = new Borrower(event.params.newWalletAddress.toHex());
+
+    borrowerNewAccount.merge([borrowerOldAccount]);
+
+    borrowerNewAccount.id = event.params.newWalletAddress.toHex();
+
+    borrowerNewAccount.save();
+    store.remove('Borrower', event.params.oldWalletAddress.toHex());
 }

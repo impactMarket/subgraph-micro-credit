@@ -1,6 +1,6 @@
 /* global changetype */
 import { Address, BigInt, ethereum } from '@graphprotocol/graph-ts';
-import { LoanAdded, LoanClaimed } from '../../generated/MicroCredit/MicroCredit';
+import { LoanAdded, LoanClaimed, UserAddressChanged } from '../../generated/MicroCredit/MicroCredit';
 import { newMockEvent } from 'matchstick-as/assembly/defaults';
 
 // createLoanAddedEvent
@@ -56,4 +56,27 @@ export function createLoanClaimedEvent(userAddress: string, loanId: BigInt): Loa
     loanClaimedEvent.parameters.push(loanIdParam);
 
     return loanClaimedEvent;
+}
+
+// createUserAddressChangedEvent(oldWalletAddress: string, newWalletAddress: string);
+export function createUserAddressChangedEvent(
+    oldWalletAddress: string,
+    newWalletAddress: string
+): UserAddressChanged {
+    const userAddressChangedEvent = changetype<UserAddressChanged>(newMockEvent());
+
+    userAddressChangedEvent.parameters = [];
+    const oldWalletAddressParam = new ethereum.EventParam(
+        'oldWalletAddress',
+        ethereum.Value.fromAddress(Address.fromString(oldWalletAddress))
+    );
+    const newWalletAddressParam = new ethereum.EventParam(
+        'newWalletAddress',
+        ethereum.Value.fromAddress(Address.fromString(newWalletAddress))
+    );
+
+    userAddressChangedEvent.parameters.push(oldWalletAddressParam);
+    userAddressChangedEvent.parameters.push(newWalletAddressParam);
+
+    return userAddressChangedEvent;
 }
