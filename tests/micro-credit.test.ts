@@ -1,10 +1,10 @@
 import { BigDecimal, BigInt } from '@graphprotocol/graph-ts';
 import { assert, clearStore, test } from 'matchstick-as/assembly/index';
-import { createLoanAddedEvent, createLoanClaimedEvent } from './utils/micro-credit';
-import { handleLoanAdded, handleLoanClaimed } from '../src/mappings/micro-credit';
+import { createLoanAddedEvent, createLoanClaimedEvent, createUserAddressChangedEvent } from './utils/micro-credit';
+import { handleLoanAdded, handleLoanClaimed, handleUserAddressChanged } from '../src/mappings/micro-credit';
 import { toToken, userAddress } from './utils/contants';
 
-export { handleLoanAdded, handleLoanClaimed };
+export { handleLoanAdded, handleLoanClaimed, handleUserAddressChanged };
 
 test('[handleLoanClaimed] register and claim', () => {
     clearStore();
@@ -48,4 +48,35 @@ test('[handleLoanAdded] register', () => {
     assert.fieldEquals('Loan', '1', 'amount', '10');
 
     assert.entityCount('MicroCredit', 0);
+});
+
+test('[handleUserAddressChanged] change address', () => {
+    clearStore();
+
+    const loanAddedEvent = createLoanAddedEvent(
+        userAddress[0],
+        BigInt.fromI32(1),
+        toToken('10'),
+        BigInt.fromI32(3600 * 24 * 30 * 6),
+        BigInt.fromString(BigDecimal.fromString('0.12').times(BigDecimal.fromString('1000000000000000000')).toString()),
+        BigInt.fromI32(1680267154)
+    );
+
+    handleLoanAdded(loanAddedEvent);
+
+    const loanClaimed = createLoanClaimedEvent(userAddress[0], BigInt.fromI32(1));
+
+    handleLoanClaimed(loanClaimed);
+
+    const userAddressChangedEvent = createUserAddressChangedEvent(
+        userAddress[0],
+        userAddress[1]
+    );
+
+    handleUserAddressChanged(userAddressChangedEvent);
+
+    // assert Borrower entity id change
+    assert.entityCount('Borrower', 1);
+    assert.notInStore('Borrower', userAddress[0]);
+    assert.fieldEquals('Borrower', userAddress[1], 'loans', '[1]');
 });

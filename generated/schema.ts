@@ -91,6 +91,15 @@ export class Borrower extends Entity {
   set id(value: string) {
     this.set("id", Value.fromString(value));
   }
+
+  get loans(): Array<string> {
+    let value = this.get("loans");
+    return value!.toStringArray();
+  }
+
+  set loans(value: Array<string>) {
+    this.set("loans", Value.fromStringArray(value));
+  }
 }
 
 export class Loan extends Entity {

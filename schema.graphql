@@ -17,6 +17,8 @@ type Borrower @entity {
   borrower id
   """
   id: ID!
+  # borrower loans
+  loans: [Loan!]!
 }
 
 """
