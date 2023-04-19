@@ -40,5 +40,17 @@
             { "type": "address", "name": "newWalletAddress", "internalType": "address", "indexed": true }
         ],
         "anonymous": false
+    },
+    {
+        "type": "event",
+        "name": "ManagerAdded",
+        "inputs": [{ "type": "address", "name": "managerAddress", "internalType": "address", "indexed": true }],
+        "anonymous": false
+    },
+    {
+        "type": "event",
+        "name": "ManagerRemoved",
+        "inputs": [{ "type": "address", "name": "managerAddress", "internalType": "address", "indexed": true }],
+        "anonymous": false
     }
 ]

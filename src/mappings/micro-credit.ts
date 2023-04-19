@@ -1,6 +1,6 @@
 import { Address, BigDecimal, store } from '@graphprotocol/graph-ts';
-import { Asset, Borrower, Loan, MicroCredit } from '../../generated/schema';
-import { LoanAdded, LoanClaimed, UserAddressChanged } from '../../generated/MicroCredit/MicroCredit';
+import { Asset, Borrower, Loan, MicroCredit, LoanManager } from '../../generated/schema';
+import { LoanAdded, LoanClaimed, ManagerAdded, UserAddressChanged } from '../../generated/MicroCredit/MicroCredit';
 
 const cUSD = '0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1';
 
@@ -75,7 +75,7 @@ export function handleLoanClaimed(event: LoanClaimed): void {
     if (!borrower) {
         // create borrower entity
         borrower = new Borrower(loan.userAddress.toHexString());
-        
+
         borrower.loans = new Array<string>();
     }
 
@@ -121,4 +121,16 @@ export function handleUserAddressChanged(event: UserAddressChanged): void {
 
     borrowerNewAccount.save();
     store.remove('Borrower', event.params.oldWalletAddress.toHex());
+}
+
+// update Loan Manager entity id
+export function handleManagerAdded(event: ManagerAdded): void {
+    let loanManagerAccount = LoanManager.load(event.params.managerAddress.toHex())!;
+
+    if (!loanManagerAccount) {
+        loanManagerAccount = new LoanManager(event.params.managerAddress.toHex());
+        loanManagerAccount.id = event.params.managerAddress.toHex();
+    }
+
+    loanManagerAccount.save();
 }

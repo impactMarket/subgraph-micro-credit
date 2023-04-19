@@ -1,7 +1,7 @@
 import { BigDecimal, BigInt } from '@graphprotocol/graph-ts';
 import { assert, clearStore, test } from 'matchstick-as/assembly/index';
-import { createLoanAddedEvent, createLoanClaimedEvent, createUserAddressChangedEvent } from './utils/micro-credit';
-import { handleLoanAdded, handleLoanClaimed, handleUserAddressChanged } from '../src/mappings/micro-credit';
+import { createLoanAddedEvent, createLoanClaimedEvent, createUserAddressChangedEvent, createManagerAddedEvent } from './utils/micro-credit';
+import { handleLoanAdded, handleLoanClaimed, handleUserAddressChanged, handleManagerAdded } from '../src/mappings/micro-credit';
 import { toToken, userAddress } from './utils/contants';
 
 export { handleLoanAdded, handleLoanClaimed, handleUserAddressChanged };
@@ -79,4 +79,18 @@ test('[handleUserAddressChanged] change address', () => {
     assert.entityCount('Borrower', 1);
     assert.notInStore('Borrower', userAddress[0]);
     assert.fieldEquals('Borrower', userAddress[1], 'loans', '[1]');
+});
+
+test('[handleManagerAdded] register', () => {
+    clearStore();
+
+    const ManagerAddedEvent = createManagerAddedEvent(
+        userAddress[0]
+    );
+
+    handleManagerAdded(ManagerAddedEvent);
+
+    // assert Loan entity
+    assert.entityCount('managerAddress', 1);
+    assert.fieldEquals('managerAddress', userAddress[0], 'address', userAddress[0]);
 });

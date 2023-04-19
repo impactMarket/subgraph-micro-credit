@@ -62,3 +62,13 @@ type MicroCredit @entity {
   # estimated liquidity available in each currency
   liquidity: [Asset!]
 }
+
+"""
+MicroCredit Loan Manager
+"""
+type LoanManager @entity {
+  """
+  manager id
+  """
+  id: ID!
+}
