@@ -78,21 +78,3 @@ type LoanManager @entity {
   """
   id: ID!
 }
-
-"""
-MicroCredit Repayment Added event
-"""
-type Repayment @entity {
-  """
-  repayment id
-  """
-  id: ID!
-  # userAddress
-  userAddress: Bytes!
-  # loan id
-  loanId: ID!
-  # amount repaid
-  repaymentAmount: BigDecimal!
-  # Timestamp
-  timestamp: Int!
-}

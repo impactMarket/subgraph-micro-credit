@@ -1,5 +1,5 @@
 import { Address, BigDecimal, store } from '@graphprotocol/graph-ts';
-import { Asset, Borrower, Loan, MicroCredit, LoanManager, Repayment } from '../../generated/schema';
+import { Asset, Borrower, Loan, MicroCredit, LoanManager } from '../../generated/schema';
 import {
     LoanAdded,
     LoanClaimed,
