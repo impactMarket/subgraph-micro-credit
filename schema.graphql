@@ -32,9 +32,15 @@ type Loan @entity {
   # loan amount
   amount: BigDecimal!
   # loan period (maturation date)
-  # period: Int!
+  period: Int!
   # loan interest (in % / day)
   dailyInterest: BigDecimal!
+  # if loan was claimed (0 - false, 1 true)
+  isClaimed: Int!
+  # amount repayed (normalized)
+  repayed: BigDecimal!
+  # timestamp of last repayment (null if no repayments)
+  lastRepayment: Int
 }
 
 """

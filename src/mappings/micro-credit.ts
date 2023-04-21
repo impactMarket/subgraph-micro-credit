@@ -67,8 +67,10 @@ export function handleLoanAdded(event: LoanAdded): void {
     loan.userAddress = event.params.userAddress;
     loan.amount = normalize(event.params.amount.toString());
     // TODO: readd when new contract is deployed
-    // loan.period = event.params.period.toI32();
+    loan.period = event.params.period.toI32();
     loan.dailyInterest = normalize(event.params.dailyInterest.toString());
+    loan.isClaimed = 0;
+    loan.repayed = BigDecimal.zero();
 
     loan.save();
 }
@@ -110,6 +112,11 @@ export function handleLoanClaimed(event: LoanClaimed): void {
     borrowerLoans.push(event.params.loanId.toString());
     borrower.loans = borrowerLoans;
 
+    // update loan entity data
+    loan.isClaimed = 1;
+
+    // save entities
+    loan.save();
     microCredit.save();
     borrower.save();
 
@@ -153,16 +160,11 @@ export function handleManagerRemoved(event: ManagerAdded): void {
 }
 
 export function handleRepaymentAdded(event: RepaymentAdded): void {
-    let repayment = Repayment.load(event.params.userAddress.toHex());
+    const loan = Loan.load(event.params.loanId.toString())!;
 
-    if (!repayment) {
-        repayment = new Repayment(event.params.userAddress.toHex());
-    }
+    // update loan entity data
+    loan.repayed = loan.repayed.plus(normalize(event.params.repaymentAmount.toString()));
+    loan.lastRepayment = event.block.timestamp.toI32();
 
-    repayment.repaymentAmount = normalize(event.params.repaymentAmount.toString());
-    repayment.userAddress = event.params.userAddress;
-    repayment.loanId = event.params.loanId.toHex();
-    repayment.timestamp = event.block.timestamp.toI32();
-
-    repayment.save();
+    loan.save();
 }

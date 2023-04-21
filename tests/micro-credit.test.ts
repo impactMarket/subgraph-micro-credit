@@ -40,6 +40,7 @@ test('[handleLoanClaimed] register and claim', () => {
     assert.fieldEquals('MicroCredit', '0', 'borrowers', '1');
     assert.fieldEquals('MicroCredit', '0', 'borrowed', '[borrowed-0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1-0]');
     assert.fieldEquals('Asset', 'borrowed-0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1-0', 'amount', '10');
+    assert.fieldEquals('Loan', '1', 'isClaimed', '1');
 });
 
 test('[handleLoanAdded] register', () => {
@@ -59,6 +60,9 @@ test('[handleLoanAdded] register', () => {
     // assert Loan entity
     assert.fieldEquals('Loan', '1', 'userAddress', userAddress[0]);
     assert.fieldEquals('Loan', '1', 'amount', '10');
+    assert.fieldEquals('Loan', '1', 'period', BigInt.fromI32(3600 * 24 * 30 * 6).toString());
+    assert.fieldEquals('Loan', '1', 'isClaimed', '0');
+    assert.fieldEquals('Loan', '1', 'repayed', '0');
 
     assert.entityCount('MicroCredit', 0);
 });
@@ -116,11 +120,21 @@ test('[handleManagerRemoved]', () => {
 test('[handleRepaymentAdded]', () => {
     clearStore();
 
+    const loanAddedEvent = createLoanAddedEvent(
+        userAddress[0],
+        BigInt.fromI32(1),
+        toToken('10'),
+        BigInt.fromI32(3600 * 24 * 30 * 6),
+        BigInt.fromString(BigDecimal.fromString('0.12').times(BigDecimal.fromString('1000000000000000000')).toString()),
+        BigInt.fromI32(1680267154)
+    );
+
+    handleLoanAdded(loanAddedEvent);
+
     const RepaymentAddedEvent = createRepaidEvent(userAddress[0], BigInt.fromI32(1), toToken('10'));
 
     handleRepaymentAdded(RepaymentAddedEvent);
 
-    assert.entityCount('id', 0);
-    assert.fieldEquals('Repayment', userAddress[0], 'userAddress', userAddress[0]);
-    assert.fieldEquals('Repayment', userAddress[0], 'repaymentAmount', '10');
+    assert.entityCount('Loan', 1);
+    assert.fieldEquals('Loan', '1', 'repayed', '10');
 });
