@@ -1,7 +1,20 @@
 import { BigDecimal, BigInt } from '@graphprotocol/graph-ts';
 import { assert, clearStore, test } from 'matchstick-as/assembly/index';
-import { createLoanAddedEvent, createLoanClaimedEvent, createUserAddressChangedEvent, createManagerAddedEvent } from './utils/micro-credit';
-import { handleLoanAdded, handleLoanClaimed, handleUserAddressChanged, handleManagerAdded } from '../src/mappings/micro-credit';
+import {
+    createLoanAddedEvent,
+    createLoanClaimedEvent,
+    createUserAddressChangedEvent,
+    createManagerAddedEvent,
+    createRepaidEvent
+} from './utils/micro-credit';
+import {
+    handleLoanAdded,
+    handleLoanClaimed,
+    handleUserAddressChanged,
+    handleManagerAdded,
+    handleRepaymentAdded,
+    handleManagerRemoved
+} from '../src/mappings/micro-credit';
 import { toToken, userAddress } from './utils/contants';
 
 export { handleLoanAdded, handleLoanClaimed, handleUserAddressChanged };
@@ -68,10 +81,7 @@ test('[handleUserAddressChanged] change address', () => {
 
     handleLoanClaimed(loanClaimed);
 
-    const userAddressChangedEvent = createUserAddressChangedEvent(
-        userAddress[0],
-        userAddress[1]
-    );
+    const userAddressChangedEvent = createUserAddressChangedEvent(userAddress[0], userAddress[1]);
 
     handleUserAddressChanged(userAddressChangedEvent);
 
@@ -84,13 +94,33 @@ test('[handleUserAddressChanged] change address', () => {
 test('[handleManagerAdded] register', () => {
     clearStore();
 
-    const ManagerAddedEvent = createManagerAddedEvent(
-        userAddress[0]
-    );
+    const ManagerAddedEvent = createManagerAddedEvent(userAddress[0]);
 
     handleManagerAdded(ManagerAddedEvent);
 
-    // assert Loan entity
-    assert.entityCount('managerAddress', 1);
-    assert.fieldEquals('managerAddress', userAddress[0], 'address', userAddress[0]);
+    assert.entityCount('LoanManager', 1);
+    assert.fieldEquals('LoanManager', userAddress[0], 'id', userAddress[0]);
+});
+
+test('[handleManagerRemoved]', () => {
+    clearStore();
+
+    const ManagerAddedEvent = createManagerAddedEvent(userAddress[0]);
+
+    handleManagerRemoved(ManagerAddedEvent);
+
+    assert.entityCount('LoanManager', 1);
+    assert.notInStore('LoanManager', userAddress[0]);
+});
+
+test('[handleRepaymentAdded]', () => {
+    clearStore();
+
+    const RepaymentAddedEvent = createRepaidEvent(userAddress[0], BigInt.fromI32(1), toToken('10'));
+
+    handleRepaymentAdded(RepaymentAddedEvent);
+
+    assert.entityCount('id', 0);
+    assert.fieldEquals('Repayment', userAddress[0], 'userAddress', userAddress[0]);
+    assert.fieldEquals('Repayment', userAddress[0], 'repaymentAmount', '10');
 });

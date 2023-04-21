@@ -1,6 +1,12 @@
 import { Address, BigDecimal, store } from '@graphprotocol/graph-ts';
-import { Asset, Borrower, Loan, MicroCredit, LoanManager } from '../../generated/schema';
-import { LoanAdded, LoanClaimed, ManagerAdded, UserAddressChanged } from '../../generated/MicroCredit/MicroCredit';
+import { Asset, Borrower, Loan, MicroCredit, LoanManager, Repayment } from '../../generated/schema';
+import {
+    LoanAdded,
+    LoanClaimed,
+    ManagerAdded,
+    UserAddressChanged,
+    RepaymentAdded
+} from '../../generated/MicroCredit/MicroCredit';
 
 const cUSD = '0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1';
 
@@ -123,14 +129,40 @@ export function handleUserAddressChanged(event: UserAddressChanged): void {
     store.remove('Borrower', event.params.oldWalletAddress.toHex());
 }
 
-// update Loan Manager entity id
+// update LoanManager entity id
 export function handleManagerAdded(event: ManagerAdded): void {
-    let loanManagerAccount = LoanManager.load(event.params.managerAddress.toHex())!;
+    let loanManagerAccount = LoanManager.load(event.params.managerAddress.toHex());
 
     if (!loanManagerAccount) {
         loanManagerAccount = new LoanManager(event.params.managerAddress.toHex());
-        loanManagerAccount.id = event.params.managerAddress.toHex();
     }
 
     loanManagerAccount.save();
+}
+
+export function handleManagerRemoved(event: ManagerAdded): void {
+    let loanManagerAccount = LoanManager.load(event.params.managerAddress.toHex());
+
+    if (!loanManagerAccount) {
+        loanManagerAccount = new LoanManager(event.params.managerAddress.toHex());
+    }
+
+    loanManagerAccount.id = '';
+
+    loanManagerAccount.save();
+}
+
+export function handleRepaymentAdded(event: RepaymentAdded): void {
+    let repayment = Repayment.load(event.params.userAddress.toHex());
+
+    if (!repayment) {
+        repayment = new Repayment(event.params.userAddress.toHex());
+    }
+
+    repayment.repaymentAmount = normalize(event.params.repaymentAmount.toString());
+    repayment.userAddress = event.params.userAddress;
+    repayment.loanId = event.params.loanId.toHex();
+    repayment.timestamp = event.block.timestamp.toI32();
+
+    repayment.save();
 }

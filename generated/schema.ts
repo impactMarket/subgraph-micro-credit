@@ -327,3 +327,71 @@ export class LoanManager extends Entity {
     this.set("id", Value.fromString(value));
   }
 }
+
+export class Repayment extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(id != null, "Cannot save Repayment entity without an ID");
+    if (id) {
+      assert(
+        id.kind == ValueKind.STRING,
+        `Entities of type Repayment must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+      );
+      store.set("Repayment", id.toString(), this);
+    }
+  }
+
+  static load(id: string): Repayment | null {
+    return changetype<Repayment | null>(store.get("Repayment", id));
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value!.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get userAddress(): Bytes {
+    let value = this.get("userAddress");
+    return value!.toBytes();
+  }
+
+  set userAddress(value: Bytes) {
+    this.set("userAddress", Value.fromBytes(value));
+  }
+
+  get loanId(): string {
+    let value = this.get("loanId");
+    return value!.toString();
+  }
+
+  set loanId(value: string) {
+    this.set("loanId", Value.fromString(value));
+  }
+
+  get repaymentAmount(): BigDecimal {
+    let value = this.get("repaymentAmount");
+    return value!.toBigDecimal();
+  }
+
+  set repaymentAmount(value: BigDecimal) {
+    this.set("repaymentAmount", Value.fromBigDecimal(value));
+  }
+
+  get timestamp(): i32 {
+    let value = this.get("timestamp");
+    return value!.toI32();
+  }
+
+  set timestamp(value: i32) {
+    this.set("timestamp", Value.fromI32(value));
+  }
+}
