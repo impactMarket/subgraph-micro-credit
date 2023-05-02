@@ -122,6 +122,42 @@ export class UserAddressChanged__Params {
   }
 }
 
+export class ManagerAdded extends ethereum.Event {
+  get params(): ManagerAdded__Params {
+    return new ManagerAdded__Params(this);
+  }
+}
+
+export class ManagerAdded__Params {
+  _event: ManagerAdded;
+
+  constructor(event: ManagerAdded) {
+    this._event = event;
+  }
+
+  get managerAddress(): Address {
+    return this._event.parameters[0].value.toAddress();
+  }
+}
+
+export class ManagerRemoved extends ethereum.Event {
+  get params(): ManagerRemoved__Params {
+    return new ManagerRemoved__Params(this);
+  }
+}
+
+export class ManagerRemoved__Params {
+  _event: ManagerRemoved;
+
+  constructor(event: ManagerRemoved) {
+    this._event = event;
+  }
+
+  get managerAddress(): Address {
+    return this._event.parameters[0].value.toAddress();
+  }
+}
+
 export class MicroCredit extends ethereum.SmartContract {
   static bind(address: Address): MicroCredit {
     return new MicroCredit("MicroCredit", address);

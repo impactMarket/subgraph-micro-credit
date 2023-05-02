@@ -1,6 +1,12 @@
 import { Address, BigDecimal, store } from '@graphprotocol/graph-ts';
-import { Asset, Borrower, Loan, MicroCredit } from '../../generated/schema';
-import { LoanAdded, LoanClaimed, UserAddressChanged } from '../../generated/MicroCredit/MicroCredit';
+import { Asset, Borrower, Loan, MicroCredit, LoanManager } from '../../generated/schema';
+import {
+    LoanAdded,
+    LoanClaimed,
+    ManagerAdded,
+    UserAddressChanged,
+    RepaymentAdded
+} from '../../generated/MicroCredit/MicroCredit';
 
 const cUSD = '0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1';
 
@@ -61,8 +67,10 @@ export function handleLoanAdded(event: LoanAdded): void {
     loan.userAddress = event.params.userAddress;
     loan.amount = normalize(event.params.amount.toString());
     // TODO: readd when new contract is deployed
-    // loan.period = event.params.period.toI32();
+    loan.period = event.params.period.toI32();
     loan.dailyInterest = normalize(event.params.dailyInterest.toString());
+    loan.isClaimed = 0;
+    loan.repayed = BigDecimal.zero();
 
     loan.save();
 }
@@ -75,7 +83,7 @@ export function handleLoanClaimed(event: LoanClaimed): void {
     if (!borrower) {
         // create borrower entity
         borrower = new Borrower(loan.userAddress.toHexString());
-        
+
         borrower.loans = new Array<string>();
     }
 
@@ -104,6 +112,11 @@ export function handleLoanClaimed(event: LoanClaimed): void {
     borrowerLoans.push(event.params.loanId.toString());
     borrower.loans = borrowerLoans;
 
+    // update loan entity data
+    loan.isClaimed = 1;
+
+    // save entities
+    loan.save();
     microCredit.save();
     borrower.save();
 
@@ -121,4 +134,37 @@ export function handleUserAddressChanged(event: UserAddressChanged): void {
 
     borrowerNewAccount.save();
     store.remove('Borrower', event.params.oldWalletAddress.toHex());
+}
+
+// update LoanManager entity id
+export function handleManagerAdded(event: ManagerAdded): void {
+    let loanManagerAccount = LoanManager.load(event.params.managerAddress.toHex());
+
+    if (!loanManagerAccount) {
+        loanManagerAccount = new LoanManager(event.params.managerAddress.toHex());
+    }
+
+    loanManagerAccount.save();
+}
+
+export function handleManagerRemoved(event: ManagerAdded): void {
+    let loanManagerAccount = LoanManager.load(event.params.managerAddress.toHex());
+
+    if (!loanManagerAccount) {
+        loanManagerAccount = new LoanManager(event.params.managerAddress.toHex());
+    }
+
+    loanManagerAccount.id = '';
+
+    loanManagerAccount.save();
+}
+
+export function handleRepaymentAdded(event: RepaymentAdded): void {
+    const loan = Loan.load(event.params.loanId.toString())!;
+
+    // update loan entity data
+    loan.repayed = loan.repayed.plus(normalize(event.params.repaymentAmount.toString()));
+    loan.lastRepayment = event.block.timestamp.toI32();
+
+    loan.save();
 }

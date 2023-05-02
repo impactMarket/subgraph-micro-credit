@@ -151,6 +151,15 @@ export class Loan extends Entity {
     this.set("amount", Value.fromBigDecimal(value));
   }
 
+  get period(): i32 {
+    let value = this.get("period");
+    return value!.toI32();
+  }
+
+  set period(value: i32) {
+    this.set("period", Value.fromI32(value));
+  }
+
   get dailyInterest(): BigDecimal {
     let value = this.get("dailyInterest");
     return value!.toBigDecimal();
@@ -158,6 +167,33 @@ export class Loan extends Entity {
 
   set dailyInterest(value: BigDecimal) {
     this.set("dailyInterest", Value.fromBigDecimal(value));
+  }
+
+  get isClaimed(): i32 {
+    let value = this.get("isClaimed");
+    return value!.toI32();
+  }
+
+  set isClaimed(value: i32) {
+    this.set("isClaimed", Value.fromI32(value));
+  }
+
+  get repayed(): BigDecimal {
+    let value = this.get("repayed");
+    return value!.toBigDecimal();
+  }
+
+  set repayed(value: BigDecimal) {
+    this.set("repayed", Value.fromBigDecimal(value));
+  }
+
+  get lastRepayment(): i32 {
+    let value = this.get("lastRepayment");
+    return value!.toI32();
+  }
+
+  set lastRepayment(value: i32) {
+    this.set("lastRepayment", Value.fromI32(value));
   }
 }
 
@@ -293,5 +329,37 @@ export class MicroCredit extends Entity {
     } else {
       this.set("liquidity", Value.fromStringArray(<Array<string>>value));
     }
+  }
+}
+
+export class LoanManager extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(id != null, "Cannot save LoanManager entity without an ID");
+    if (id) {
+      assert(
+        id.kind == ValueKind.STRING,
+        `Entities of type LoanManager must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+      );
+      store.set("LoanManager", id.toString(), this);
+    }
+  }
+
+  static load(id: string): LoanManager | null {
+    return changetype<LoanManager | null>(store.get("LoanManager", id));
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value!.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
   }
 }
