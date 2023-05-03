@@ -1,14 +1,13 @@
 import { Address, BigDecimal, store } from '@graphprotocol/graph-ts';
-import { Asset, Borrower, Loan, MicroCredit, LoanManager } from '../../generated/schema';
+import { Asset, Borrower, Loan, LoanManager, MicroCredit } from '../../generated/schema';
 import {
     LoanAdded,
     LoanClaimed,
     ManagerAdded,
-    UserAddressChanged,
-    RepaymentAdded
+    RepaymentAdded,
+    UserAddressChanged
 } from '../../generated/MicroCredit/MicroCredit';
-
-const cUSD = '0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1';
+import { cUSDAddress } from '../addresses';
 
 export const normalize = (amount: string): BigDecimal =>
     BigDecimal.fromString(amount).div(BigDecimal.fromString('1000000000000000000'));
@@ -62,27 +61,29 @@ function updateAsset(
 
 export function handleLoanAdded(event: LoanAdded): void {
     // register loan to LoanAdded entity
-    const loan = new Loan(event.params.loanId.toString());
+    const borrowerLoanId = `${event.params.userAddress.toHex()}-${event.params.loanId.toString()}`;
+    const loan = new Loan(borrowerLoanId);
 
     loan.userAddress = event.params.userAddress;
     loan.amount = normalize(event.params.amount.toString());
-    // TODO: readd when new contract is deployed
     loan.period = event.params.period.toI32();
     loan.dailyInterest = normalize(event.params.dailyInterest.toString());
     loan.isClaimed = 0;
     loan.repayed = BigDecimal.zero();
+    loan.addedBy = event.transaction.from.toHex();
 
     loan.save();
 }
 
 export function handleLoanClaimed(event: LoanClaimed): void {
     // load loan
-    const loan = Loan.load(event.params.loanId.toString())!;
-    let borrower = Borrower.load(loan.userAddress.toHexString());
+    const borrowerLoanId = `${event.params.userAddress.toHex()}-${event.params.loanId.toString()}`;
+    const loan = Loan.load(borrowerLoanId)!;
+    let borrower = Borrower.load(loan.userAddress.toHex());
 
     if (!borrower) {
         // create borrower entity
-        borrower = new Borrower(loan.userAddress.toHexString());
+        borrower = new Borrower(loan.userAddress.toHex());
 
         borrower.loans = new Array<string>();
     }
@@ -97,19 +98,19 @@ export function handleLoanClaimed(event: LoanClaimed): void {
     }
 
     // update global micro credit entity data
-    const assetBorrowedId = `borrowed-${cUSD}-0`;
-    const assetDebtId = `debt-${cUSD}-0`;
-    const assetLiquidityId = `liquidity-${cUSD}-0`;
+    const assetBorrowedId = `borrowed-${cUSDAddress}-0`;
+    const assetDebtId = `debt-${cUSDAddress}-0`;
+    const assetLiquidityId = `liquidity-${cUSDAddress}-0`;
 
-    microCredit.borrowed = updateAsset(assetBorrowedId, cUSD, loan.amount, microCredit.borrowed, false);
-    microCredit.debt = updateAsset(assetDebtId, cUSD, loan.amount, microCredit.debt, false);
-    microCredit.liquidity = updateAsset(assetLiquidityId, cUSD, loan.amount, microCredit.liquidity, true);
+    microCredit.borrowed = updateAsset(assetBorrowedId, cUSDAddress, loan.amount, microCredit.borrowed, false);
+    microCredit.debt = updateAsset(assetDebtId, cUSDAddress, loan.amount, microCredit.debt, false);
+    microCredit.liquidity = updateAsset(assetLiquidityId, cUSDAddress, loan.amount, microCredit.liquidity, true);
     microCredit.borrowers += 1;
 
     // update borrower entity data
     const borrowerLoans = borrower.loans;
 
-    borrowerLoans.push(event.params.loanId.toString());
+    borrowerLoans.push(borrowerLoanId);
     borrower.loans = borrowerLoans;
 
     // update loan entity data
@@ -119,8 +120,6 @@ export function handleLoanClaimed(event: LoanClaimed): void {
     loan.save();
     microCredit.save();
     borrower.save();
-
-    // TBA: update borrower entity
 }
 
 // update Borrower entity id
@@ -154,17 +153,37 @@ export function handleManagerRemoved(event: ManagerAdded): void {
         loanManagerAccount = new LoanManager(event.params.managerAddress.toHex());
     }
 
-    loanManagerAccount.id = '';
-
     loanManagerAccount.save();
 }
 
 export function handleRepaymentAdded(event: RepaymentAdded): void {
-    const loan = Loan.load(event.params.loanId.toString())!;
+    const borrowerLoanId = `${event.params.userAddress.toHex()}-${event.params.loanId.toString()}`;
+    const loan = Loan.load(borrowerLoanId)!;
 
     // update loan entity data
     loan.repayed = loan.repayed.plus(normalize(event.params.repaymentAmount.toString()));
     loan.lastRepayment = event.block.timestamp.toI32();
 
+    // load or create new global micro credit entity
+    let microCredit = MicroCredit.load('0');
+
+    if (!microCredit) {
+        microCredit = new MicroCredit('0');
+        microCredit.borrowers = 0;
+        microCredit.repayments = 0;
+    }
+
+    // update global micro credit entity data
+    const assetRepaidId = `repaid-${cUSDAddress}-0`;
+
+    microCredit.repaid = updateAsset(
+        assetRepaidId,
+        cUSDAddress,
+        normalize(event.params.repaymentAmount.toString()),
+        microCredit.repaid,
+        false
+    );
+
     loan.save();
+    microCredit.save();
 }

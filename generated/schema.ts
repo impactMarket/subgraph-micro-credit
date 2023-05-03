@@ -195,6 +195,15 @@ export class Loan extends Entity {
   set lastRepayment(value: i32) {
     this.set("lastRepayment", Value.fromI32(value));
   }
+
+  get addedBy(): string {
+    let value = this.get("addedBy");
+    return value!.toString();
+  }
+
+  set addedBy(value: string) {
+    this.set("addedBy", Value.fromString(value));
+  }
 }
 
 export class MicroCredit extends Entity {

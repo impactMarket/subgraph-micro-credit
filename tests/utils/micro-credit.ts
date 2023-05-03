@@ -1,6 +1,12 @@
 /* global changetype */
 import { Address, BigInt, ethereum } from '@graphprotocol/graph-ts';
-import { LoanAdded, LoanClaimed, ManagerAdded, UserAddressChanged, RepaymentAdded } from '../../generated/MicroCredit/MicroCredit';
+import {
+    LoanAdded,
+    LoanClaimed,
+    ManagerAdded,
+    RepaymentAdded,
+    UserAddressChanged
+} from '../../generated/MicroCredit/MicroCredit';
 import { newMockEvent } from 'matchstick-as/assembly/defaults';
 
 // createLoanAddedEvent
@@ -59,10 +65,7 @@ export function createLoanClaimedEvent(userAddress: string, loanId: BigInt): Loa
 }
 
 // createUserAddressChangedEvent(oldWalletAddress: string, newWalletAddress: string);
-export function createUserAddressChangedEvent(
-    oldWalletAddress: string,
-    newWalletAddress: string
-): UserAddressChanged {
+export function createUserAddressChangedEvent(oldWalletAddress: string, newWalletAddress: string): UserAddressChanged {
     const userAddressChangedEvent = changetype<UserAddressChanged>(newMockEvent());
 
     userAddressChangedEvent.parameters = [];
@@ -81,9 +84,7 @@ export function createUserAddressChangedEvent(
     return userAddressChangedEvent;
 }
 
-export function createManagerAddedEvent(
-    managerAddress: string
-): ManagerAdded {
+export function createManagerAddedEvent(managerAddress: string): ManagerAdded {
     const userManagerAddedEvent = changetype<ManagerAdded>(newMockEvent());
 
     userManagerAddedEvent.parameters = [];
@@ -91,16 +92,13 @@ export function createManagerAddedEvent(
         'managerAddress',
         ethereum.Value.fromAddress(Address.fromString(managerAddress))
     );
+
     userManagerAddedEvent.parameters.push(managerAddressParam);
 
     return userManagerAddedEvent;
 }
 
-export function createRepaidEvent(
-    userAddress: string,
-    loanId: BigInt,
-    amount: BigInt
-): RepaymentAdded {
+export function createRepaidEvent(userAddress: string, loanId: BigInt, amount: BigInt): RepaymentAdded {
     const repaymentAddedEvent = changetype<RepaymentAdded>(newMockEvent());
 
     repaymentAddedEvent.parameters = [];
