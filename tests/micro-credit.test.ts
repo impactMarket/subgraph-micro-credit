@@ -3,17 +3,17 @@ import { assert, clearStore, test } from 'matchstick-as/assembly/index';
 import {
     createLoanAddedEvent,
     createLoanClaimedEvent,
-    createUserAddressChangedEvent,
     createManagerAddedEvent,
-    createRepaidEvent
+    createRepaidEvent,
+    createUserAddressChangedEvent
 } from './utils/micro-credit';
 import {
     handleLoanAdded,
     handleLoanClaimed,
-    handleUserAddressChanged,
     handleManagerAdded,
+    handleManagerRemoved,
     handleRepaymentAdded,
-    handleManagerRemoved
+    handleUserAddressChanged
 } from '../src/mappings/micro-credit';
 import { toToken, userAddress } from './utils/contants';
 

@@ -22,9 +22,11 @@
         "eslint": "eslint --fix \"./{src,tests}/**/*.ts\" --max-warnings=0",
         "eslint:dryrun": "eslint \"./{src,tests}/**/*.ts\" --max-warnings=0",
         "prepare:mainnet:subgraph": "mustache config/mainnet.json subgraph.template.yaml > subgraph.yaml",
-        "prepare:mainnet": "yarn prepare:mainnet:subgraph",
+        "prepare:mainnet:addresses": "mustache config/mainnet.json src/addresses.template > src/addresses.ts",
+        "prepare:mainnet": "yarn prepare:mainnet:subgraph && yarn prepare:mainnet:addresses",
         "prepare:alfajores:subgraph": "mustache config/alfajores.json subgraph.template.yaml > subgraph.yaml",
-        "prepare:alfajores": "yarn prepare:alfajores:subgraph"
+        "prepare:alfajores:addresses": "mustache config/alfajores.json src/addresses.template > src/addresses.ts",
+        "prepare:alfajores": "yarn prepare:alfajores:subgraph && yarn prepare:alfajores:addresses"
     },
     "dependencies": {
         "@graphprotocol/graph-cli": "0.37.1",

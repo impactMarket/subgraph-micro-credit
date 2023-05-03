@@ -1,5 +1,6 @@
 {
     "startBlock": 16978213,
     "network": "celo-alfajores",
-    "MicroCredit": "0x87b2B044aA4175f18c4729133c85822C4C6d1cAF"
+    "MicroCredit": "0x87b2B044aA4175f18c4729133c85822C4C6d1cAF",
+    "cUSD": "0x874069fa1eb16d44d622f2e0ca25eea172369bc1"
 }

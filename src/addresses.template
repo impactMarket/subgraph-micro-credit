@@ -1,0 +1,3 @@
+const cUSDAddress: string = '{{cUSD}}';
+
+export { cUSDAddress };

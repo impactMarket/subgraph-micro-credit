@@ -25,7 +25,7 @@ type Borrower @entity {
 Loan entity
 """
 type Loan @entity {
-  # loan id
+  # loan id {userAdreress}-{loanId}
   id: ID!
   # borrower address
   userAddress: Bytes!
@@ -41,6 +41,8 @@ type Loan @entity {
   repayed: BigDecimal!
   # timestamp of last repayment (null if no repayments)
   lastRepayment: Int
+  # manager adding the loan
+  addedBy: LoanManager!
 }
 
 """
