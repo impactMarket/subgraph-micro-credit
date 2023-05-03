@@ -18,7 +18,7 @@ type Borrower @entity {
   """
   id: ID!
   # borrower loans
-  loans: [Loan!]!
+  loans: [Loan!]! @derivedFrom(field: "borrower")
 }
 
 """
@@ -28,7 +28,7 @@ type Loan @entity {
   # loan id {userAdreress}-{loanId}
   id: ID!
   # borrower address
-  userAddress: Bytes!
+  borrower: Borrower!
   # loan amount
   amount: BigDecimal!
   # loan period (maturation date)
@@ -79,4 +79,6 @@ type LoanManager @entity {
   manager id
   """
   id: ID!
+  # manager state
+  state: Int!
 }

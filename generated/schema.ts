@@ -133,13 +133,13 @@ export class Loan extends Entity {
     this.set("id", Value.fromString(value));
   }
 
-  get userAddress(): Bytes {
-    let value = this.get("userAddress");
-    return value!.toBytes();
+  get borrower(): string {
+    let value = this.get("borrower");
+    return value!.toString();
   }
 
-  set userAddress(value: Bytes) {
-    this.set("userAddress", Value.fromBytes(value));
+  set borrower(value: string) {
+    this.set("borrower", Value.fromString(value));
   }
 
   get amount(): BigDecimal {
@@ -370,5 +370,14 @@ export class LoanManager extends Entity {
 
   set id(value: string) {
     this.set("id", Value.fromString(value));
+  }
+
+  get state(): i32 {
+    let value = this.get("state");
+    return value!.toI32();
+  }
+
+  set state(value: i32) {
+    this.set("state", Value.fromI32(value));
   }
 }

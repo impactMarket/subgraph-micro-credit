@@ -64,7 +64,15 @@ export function handleLoanAdded(event: LoanAdded): void {
     const borrowerLoanId = `${event.params.userAddress.toHex()}-${event.params.loanId.toString()}`;
     const loan = new Loan(borrowerLoanId);
 
-    loan.userAddress = event.params.userAddress;
+
+    let borrower = Borrower.load(event.params.userAddress.toHex());
+
+    if (!borrower) {
+        // create borrower entity
+        borrower = new Borrower(event.params.userAddress.toHex());
+    }
+
+    loan.borrower = event.params.userAddress.toHex();
     loan.amount = normalize(event.params.amount.toString());
     loan.period = event.params.period.toI32();
     loan.dailyInterest = normalize(event.params.dailyInterest.toString());
@@ -73,20 +81,13 @@ export function handleLoanAdded(event: LoanAdded): void {
     loan.addedBy = event.transaction.from.toHex();
 
     loan.save();
+    borrower.save();
 }
 
 export function handleLoanClaimed(event: LoanClaimed): void {
     // load loan
     const borrowerLoanId = `${event.params.userAddress.toHex()}-${event.params.loanId.toString()}`;
     const loan = Loan.load(borrowerLoanId)!;
-    let borrower = Borrower.load(loan.userAddress.toHex());
-
-    if (!borrower) {
-        // create borrower entity
-        borrower = new Borrower(loan.userAddress.toHex());
-
-        borrower.loans = new Array<string>();
-    }
 
     // load or create new global micro credit entity
     let microCredit = MicroCredit.load('0');
@@ -107,19 +108,12 @@ export function handleLoanClaimed(event: LoanClaimed): void {
     microCredit.liquidity = updateAsset(assetLiquidityId, cUSDAddress, loan.amount, microCredit.liquidity, true);
     microCredit.borrowers += 1;
 
-    // update borrower entity data
-    const borrowerLoans = borrower.loans;
-
-    borrowerLoans.push(borrowerLoanId);
-    borrower.loans = borrowerLoans;
-
     // update loan entity data
     loan.isClaimed = 1;
 
     // save entities
     loan.save();
     microCredit.save();
-    borrower.save();
 }
 
 // update Borrower entity id
@@ -143,6 +137,8 @@ export function handleManagerAdded(event: ManagerAdded): void {
         loanManagerAccount = new LoanManager(event.params.managerAddress.toHex());
     }
 
+    loanManagerAccount.state = 0;
+
     loanManagerAccount.save();
 }
 
@@ -152,6 +148,8 @@ export function handleManagerRemoved(event: ManagerAdded): void {
     if (!loanManagerAccount) {
         loanManagerAccount = new LoanManager(event.params.managerAddress.toHex());
     }
+
+    loanManagerAccount.state = 1;
 
     loanManagerAccount.save();
 }
