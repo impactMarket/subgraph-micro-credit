@@ -169,13 +169,13 @@ export class Loan extends Entity {
     this.set("dailyInterest", Value.fromBigDecimal(value));
   }
 
-  get isClaimed(): i32 {
-    let value = this.get("isClaimed");
+  get claimed(): i32 {
+    let value = this.get("claimed");
     return value!.toI32();
   }
 
-  set isClaimed(value: i32) {
-    this.set("isClaimed", Value.fromI32(value));
+  set claimed(value: i32) {
+    this.set("claimed", Value.fromI32(value));
   }
 
   get repayed(): BigDecimal {
