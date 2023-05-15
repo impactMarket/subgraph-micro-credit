@@ -35,8 +35,8 @@ type Loan @entity {
   period: Int!
   # loan interest (in % / day)
   dailyInterest: BigDecimal!
-  # if loan was claimed (0 - false, 1 true)
-  isClaimed: Int!
+  # timestamp if loan was claimed, otherwise null
+  claimed: Int
   # amount repayed (normalized)
   repayed: BigDecimal!
   # timestamp of last repayment (null if no repayments)

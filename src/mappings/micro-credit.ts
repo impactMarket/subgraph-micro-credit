@@ -76,7 +76,6 @@ export function handleLoanAdded(event: LoanAdded): void {
     loan.amount = normalize(event.params.amount.toString());
     loan.period = event.params.period.toI32();
     loan.dailyInterest = normalize(event.params.dailyInterest.toString());
-    loan.isClaimed = 0;
     loan.repayed = BigDecimal.zero();
     loan.addedBy = event.transaction.from.toHex();
 
@@ -109,7 +108,7 @@ export function handleLoanClaimed(event: LoanClaimed): void {
     microCredit.borrowers += 1;
 
     // update loan entity data
-    loan.isClaimed = 1;
+    loan.claimed = event.block.timestamp.toI32();
 
     // save entities
     loan.save();
@@ -122,6 +121,20 @@ export function handleUserAddressChanged(event: UserAddressChanged): void {
     const borrowerNewAccount = new Borrower(event.params.newWalletAddress.toHex());
 
     borrowerNewAccount.merge([borrowerOldAccount]);
+
+    for (let i = 0; i < borrowerOldAccount.loans.length; ++i) {
+        const oldLoan = Loan.load(borrowerOldAccount.loans[i])!;
+        const borrowerLoanId = `${event.params.newWalletAddress.toHex()}-${(i + 1).toString()}`;
+        const newLoan = new Loan(borrowerLoanId);
+
+        newLoan.merge([oldLoan]);
+
+        newLoan.id = borrowerLoanId;
+        newLoan.borrower = event.params.newWalletAddress.toHex();
+
+        newLoan.save();
+        store.remove('Loan', oldLoan.id);
+    }
 
     borrowerNewAccount.id = event.params.newWalletAddress.toHex();
 
