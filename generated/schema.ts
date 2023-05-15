@@ -196,6 +196,40 @@ export class Loan extends Entity {
     this.set("lastRepayment", Value.fromI32(value));
   }
 
+  get lastRepaymentAmount(): BigDecimal | null {
+    let value = this.get("lastRepaymentAmount");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toBigDecimal();
+    }
+  }
+
+  set lastRepaymentAmount(value: BigDecimal | null) {
+    if (!value) {
+      this.unset("lastRepaymentAmount");
+    } else {
+      this.set("lastRepaymentAmount", Value.fromBigDecimal(<BigDecimal>value));
+    }
+  }
+
+  get lastDebt(): BigDecimal | null {
+    let value = this.get("lastDebt");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toBigDecimal();
+    }
+  }
+
+  set lastDebt(value: BigDecimal | null) {
+    if (!value) {
+      this.unset("lastDebt");
+    } else {
+      this.set("lastDebt", Value.fromBigDecimal(<BigDecimal>value));
+    }
+  }
+
   get addedBy(): string {
     let value = this.get("addedBy");
     return value!.toString();

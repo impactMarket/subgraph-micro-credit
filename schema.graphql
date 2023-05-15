@@ -41,6 +41,10 @@ type Loan @entity {
   repayed: BigDecimal!
   # timestamp of last repayment (null if no repayments)
   lastRepayment: Int
+  # amount paid on last repayment (normalized)
+  lastRepaymentAmount: BigDecimal
+  # debt after the last repayment (normalized)
+  lastDebt: BigDecimal
   # manager adding the loan
   addedBy: LoanManager!
 }
