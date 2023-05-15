@@ -174,6 +174,8 @@ export function handleRepaymentAdded(event: RepaymentAdded): void {
     // update loan entity data
     loan.repayed = loan.repayed.plus(normalize(event.params.repaymentAmount.toString()));
     loan.lastRepayment = event.block.timestamp.toI32();
+    loan.lastRepaymentAmount = normalize(event.params.repaymentAmount.toString());
+    loan.lastDebt = normalize(event.params.currentDebt.toString());
 
     // load or create new global micro credit entity
     let microCredit = MicroCredit.load('0');
