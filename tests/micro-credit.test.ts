@@ -1,10 +1,12 @@
 import { BigDecimal, BigInt } from '@graphprotocol/graph-ts';
 import { assert, clearStore, test } from 'matchstick-as/assembly/index';
+import { cUSDAddress, toToken, userAddress } from './utils/contants';
 import {
     createLoanAddedEvent,
     createLoanClaimedEvent,
     createManagerAddedEvent,
-    createRepaidEvent,
+    createManagerRemovedEvent,
+    createRepaymentAddedEvent,
     createUserAddressChangedEvent
 } from './utils/micro-credit';
 import {
@@ -15,12 +17,15 @@ import {
     handleRepaymentAdded,
     handleUserAddressChanged
 } from '../src/mappings/micro-credit';
-import { toToken, userAddress } from './utils/contants';
 
 export { handleLoanAdded, handleLoanClaimed, handleUserAddressChanged };
 
 test('[handleLoanClaimed] register and claim', () => {
     clearStore();
+
+    const managerAddedEvent = createManagerAddedEvent(userAddress[1]);
+
+    handleManagerAdded(managerAddedEvent);
 
     const loanAddedEvent = createLoanAddedEvent(
         userAddress[0],
@@ -28,7 +33,8 @@ test('[handleLoanClaimed] register and claim', () => {
         toToken('10'),
         BigInt.fromI32(3600 * 24 * 30 * 6),
         BigInt.fromString(BigDecimal.fromString('0.12').times(BigDecimal.fromString('1000000000000000000')).toString()),
-        BigInt.fromI32(1680267154)
+        BigInt.fromI32(1680267154),
+        userAddress[1]
     );
 
     handleLoanAdded(loanAddedEvent);
@@ -38,13 +44,17 @@ test('[handleLoanClaimed] register and claim', () => {
     handleLoanClaimed(loanClaimed);
 
     assert.fieldEquals('MicroCredit', '0', 'borrowers', '1');
-    assert.fieldEquals('MicroCredit', '0', 'borrowed', '[borrowed-0x874069fa1eb16d44d622f2e0ca25eea172369bc1-0]');
-    assert.fieldEquals('Asset', 'borrowed-0x874069fa1eb16d44d622f2e0ca25eea172369bc1-0', 'amount', '10');
+    assert.fieldEquals('MicroCredit', '0', 'borrowed', `[borrowed-${cUSDAddress}-0]`);
+    assert.fieldEquals('Asset', `borrowed-${cUSDAddress}-0`, 'amount', '10');
     assert.fieldEquals('Loan', `${userAddress[0]}-1`, 'claimed', '1');
 });
 
 test('[handleLoanAdded] register', () => {
     clearStore();
+
+    const managerAddedEvent = createManagerAddedEvent(userAddress[1]);
+
+    handleManagerAdded(managerAddedEvent);
 
     const loanAddedEvent = createLoanAddedEvent(
         userAddress[0],
@@ -52,7 +62,8 @@ test('[handleLoanAdded] register', () => {
         toToken('10'),
         BigInt.fromI32(3600 * 24 * 30 * 6),
         BigInt.fromString(BigDecimal.fromString('0.12').times(BigDecimal.fromString('1000000000000000000')).toString()),
-        BigInt.fromI32(1680267154)
+        BigInt.fromI32(1680267154),
+        userAddress[1]
     );
 
     handleLoanAdded(loanAddedEvent);
@@ -69,13 +80,18 @@ test('[handleLoanAdded] register', () => {
 test('[handleUserAddressChanged] change address', () => {
     clearStore();
 
+    const managerAddedEvent = createManagerAddedEvent(userAddress[1]);
+
+    handleManagerAdded(managerAddedEvent);
+
     const loanAddedEvent = createLoanAddedEvent(
         userAddress[0],
         BigInt.fromI32(1),
         toToken('10'),
         BigInt.fromI32(3600 * 24 * 30 * 6),
         BigInt.fromString(BigDecimal.fromString('0.12').times(BigDecimal.fromString('1000000000000000000')).toString()),
-        BigInt.fromI32(1680267154)
+        BigInt.fromI32(1680267154),
+        userAddress[1]
     );
 
     handleLoanAdded(loanAddedEvent);
@@ -108,9 +124,13 @@ test('[handleManagerAdded] register', () => {
 test('[handleManagerRemoved]', () => {
     clearStore();
 
-    const ManagerAddedEvent = createManagerAddedEvent(userAddress[0]);
+    const managerAddedEvent = createManagerAddedEvent(userAddress[0]);
 
-    handleManagerRemoved(ManagerAddedEvent);
+    handleManagerAdded(managerAddedEvent);
+
+    const managerRemovedEvent = createManagerRemovedEvent(userAddress[0]);
+
+    handleManagerRemoved(managerRemovedEvent);
 
     assert.entityCount('LoanManager', 1);
     assert.fieldEquals('LoanManager', userAddress[0], 'state', '1');
@@ -119,21 +139,52 @@ test('[handleManagerRemoved]', () => {
 test('[handleRepaymentAdded]', () => {
     clearStore();
 
+    const managerAddedEvent = createManagerAddedEvent(userAddress[1]);
+
+    handleManagerAdded(managerAddedEvent);
+
     const loanAddedEvent = createLoanAddedEvent(
         userAddress[0],
         BigInt.fromI32(1),
         toToken('10'),
         BigInt.fromI32(3600 * 24 * 30 * 6),
         BigInt.fromString(BigDecimal.fromString('0.12').times(BigDecimal.fromString('1000000000000000000')).toString()),
-        BigInt.fromI32(1680267154)
+        BigInt.fromI32(1680267154),
+        userAddress[1]
     );
 
     handleLoanAdded(loanAddedEvent);
 
-    const RepaymentAddedEvent = createRepaidEvent(userAddress[0], BigInt.fromI32(1), toToken('10'));
+    const loanClaimed = createLoanClaimedEvent(userAddress[0], BigInt.fromI32(1));
 
-    handleRepaymentAdded(RepaymentAddedEvent);
+    handleLoanClaimed(loanClaimed);
+
+    assert.fieldEquals('MicroCredit', '0', 'debt', `[debt-${cUSDAddress}-0]`);
+    assert.fieldEquals('Asset', `debt-${cUSDAddress}-0`, 'amount', '10');
+
+    const RepaymentAddedEvent1 = createRepaymentAddedEvent(
+        userAddress[0],
+        BigInt.fromI32(1),
+        toToken('5'),
+        toToken('6')
+    );
+
+    handleRepaymentAdded(RepaymentAddedEvent1);
+
+    assert.fieldEquals('MicroCredit', '0', 'debt', `[debt-${cUSDAddress}-0]`);
+    assert.fieldEquals('Asset', `debt-${cUSDAddress}-0`, 'amount', '6');
+
+    const RepaymentAddedEvent2 = createRepaymentAddedEvent(
+        userAddress[0],
+        BigInt.fromI32(1),
+        toToken('6'),
+        toToken('0')
+    );
+
+    handleRepaymentAdded(RepaymentAddedEvent2);
 
     assert.entityCount('Loan', 1);
-    assert.fieldEquals('Loan', `${userAddress[0]}-1`, 'repayed', '10');
+    assert.fieldEquals('Loan', `${userAddress[0]}-1`, 'repayed', '11');
+    assert.fieldEquals('MicroCredit', '0', 'interest', `[interest-${cUSDAddress}-0]`);
+    assert.fieldEquals('Asset', `interest-${cUSDAddress}-0`, 'amount', '1');
 });

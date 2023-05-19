@@ -238,6 +238,15 @@ export class Loan extends Entity {
   set addedBy(value: string) {
     this.set("addedBy", Value.fromString(value));
   }
+
+  get repayments(): i32 {
+    let value = this.get("repayments");
+    return value!.toI32();
+  }
+
+  set repayments(value: i32) {
+    this.set("repayments", Value.fromI32(value));
+  }
 }
 
 export class MicroCredit extends Entity {
@@ -413,5 +422,14 @@ export class LoanManager extends Entity {
 
   set state(value: i32) {
     this.set("state", Value.fromI32(value));
+  }
+
+  get borrowers(): i32 {
+    let value = this.get("borrowers");
+    return value!.toI32();
+  }
+
+  set borrowers(value: i32) {
+    this.set("borrowers", Value.fromI32(value));
   }
 }

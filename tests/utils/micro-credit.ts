@@ -4,6 +4,7 @@ import {
     LoanAdded,
     LoanClaimed,
     ManagerAdded,
+    ManagerRemoved,
     RepaymentAdded,
     UserAddressChanged
 } from '../../generated/MicroCredit/MicroCredit';
@@ -16,10 +17,13 @@ export function createLoanAddedEvent(
     amount: BigInt,
     period: BigInt,
     dailyInterest: BigInt,
-    claimDeadline: BigInt
+    claimDeadline: BigInt,
+    managerAddress: string
 ): LoanAdded {
     const loanAddedEvent = changetype<LoanAdded>(newMockEvent());
 
+    loanAddedEvent.block.number = BigInt.fromI32(17089332);
+    loanAddedEvent.transaction.from = Address.fromString(managerAddress);
     loanAddedEvent.parameters = [];
     const userAddressParam = new ethereum.EventParam(
         'userAddress',
@@ -98,7 +102,26 @@ export function createManagerAddedEvent(managerAddress: string): ManagerAdded {
     return userManagerAddedEvent;
 }
 
-export function createRepaidEvent(userAddress: string, loanId: BigInt, amount: BigInt): RepaymentAdded {
+export function createManagerRemovedEvent(managerAddress: string): ManagerRemoved {
+    const userManagerRemovedEvent = changetype<ManagerRemoved>(newMockEvent());
+
+    userManagerRemovedEvent.parameters = [];
+    const managerAddressParam = new ethereum.EventParam(
+        'managerAddress',
+        ethereum.Value.fromAddress(Address.fromString(managerAddress))
+    );
+
+    userManagerRemovedEvent.parameters.push(managerAddressParam);
+
+    return userManagerRemovedEvent;
+}
+
+export function createRepaymentAddedEvent(
+    userAddress: string,
+    loanId: BigInt,
+    repaymentAmount: BigInt,
+    currentDebt: BigInt
+): RepaymentAdded {
     const repaymentAddedEvent = changetype<RepaymentAdded>(newMockEvent());
 
     repaymentAddedEvent.parameters = [];
@@ -107,11 +130,16 @@ export function createRepaidEvent(userAddress: string, loanId: BigInt, amount: B
         ethereum.Value.fromAddress(Address.fromString(userAddress))
     );
     const loanIdParam = new ethereum.EventParam('loanId', ethereum.Value.fromUnsignedBigInt(loanId));
-    const amountParam = new ethereum.EventParam('amount', ethereum.Value.fromUnsignedBigInt(amount));
+    const repaymentAmountParam = new ethereum.EventParam(
+        'repaymentAmount',
+        ethereum.Value.fromUnsignedBigInt(repaymentAmount)
+    );
+    const currentDebtParam = new ethereum.EventParam('currentDebt', ethereum.Value.fromUnsignedBigInt(currentDebt));
 
     repaymentAddedEvent.parameters.push(userAddressParam);
     repaymentAddedEvent.parameters.push(loanIdParam);
-    repaymentAddedEvent.parameters.push(amountParam);
+    repaymentAddedEvent.parameters.push(repaymentAmountParam);
+    repaymentAddedEvent.parameters.push(currentDebtParam);
 
     return repaymentAddedEvent;
 }
