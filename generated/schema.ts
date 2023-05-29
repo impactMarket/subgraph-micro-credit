@@ -178,13 +178,13 @@ export class Loan extends Entity {
     this.set("claimed", Value.fromI32(value));
   }
 
-  get repayed(): BigDecimal {
-    let value = this.get("repayed");
+  get repaid(): BigDecimal {
+    let value = this.get("repaid");
     return value!.toBigDecimal();
   }
 
-  set repayed(value: BigDecimal) {
-    this.set("repayed", Value.fromBigDecimal(value));
+  set repaid(value: BigDecimal) {
+    this.set("repaid", Value.fromBigDecimal(value));
   }
 
   get lastRepayment(): i32 {
@@ -246,6 +246,56 @@ export class Loan extends Entity {
 
   set repayments(value: i32) {
     this.set("repayments", Value.fromI32(value));
+  }
+}
+
+export class AverageValue extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(id != null, "Cannot save AverageValue entity without an ID");
+    if (id) {
+      assert(
+        id.kind == ValueKind.STRING,
+        `Entities of type AverageValue must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+      );
+      store.set("AverageValue", id.toString(), this);
+    }
+  }
+
+  static load(id: string): AverageValue | null {
+    return changetype<AverageValue | null>(store.get("AverageValue", id));
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value!.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get value(): BigDecimal {
+    let value = this.get("value");
+    return value!.toBigDecimal();
+  }
+
+  set value(value: BigDecimal) {
+    this.set("value", Value.fromBigDecimal(value));
+  }
+
+  get count(): i32 {
+    let value = this.get("count");
+    return value!.toI32();
+  }
+
+  set count(value: i32) {
+    this.set("count", Value.fromI32(value));
   }
 }
 
@@ -348,22 +398,56 @@ export class MicroCredit extends Entity {
     }
   }
 
-  get borrowers(): i32 {
-    let value = this.get("borrowers");
+  get avgLoanAmount(): Array<string> | null {
+    let value = this.get("avgLoanAmount");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toStringArray();
+    }
+  }
+
+  set avgLoanAmount(value: Array<string> | null) {
+    if (!value) {
+      this.unset("avgLoanAmount");
+    } else {
+      this.set("avgLoanAmount", Value.fromStringArray(<Array<string>>value));
+    }
+  }
+
+  get avgLoanPeriod(): Array<string> | null {
+    let value = this.get("avgLoanPeriod");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toStringArray();
+    }
+  }
+
+  set avgLoanPeriod(value: Array<string> | null) {
+    if (!value) {
+      this.unset("avgLoanPeriod");
+    } else {
+      this.set("avgLoanPeriod", Value.fromStringArray(<Array<string>>value));
+    }
+  }
+
+  get loans(): i32 {
+    let value = this.get("loans");
     return value!.toI32();
   }
 
-  set borrowers(value: i32) {
-    this.set("borrowers", Value.fromI32(value));
+  set loans(value: i32) {
+    this.set("loans", Value.fromI32(value));
   }
 
-  get repayments(): i32 {
-    let value = this.get("repayments");
+  get repaidLoans(): i32 {
+    let value = this.get("repaidLoans");
     return value!.toI32();
   }
 
-  set repayments(value: i32) {
-    this.set("repayments", Value.fromI32(value));
+  set repaidLoans(value: i32) {
+    this.set("repaidLoans", Value.fromI32(value));
   }
 
   get liquidity(): Array<string> | null {

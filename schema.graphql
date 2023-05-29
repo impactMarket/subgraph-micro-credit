@@ -37,8 +37,8 @@ type Loan @entity {
   dailyInterest: BigDecimal!
   # timestamp if loan was claimed, otherwise null
   claimed: Int
-  # amount repayed (normalized)
-  repayed: BigDecimal!
+  # amount repaid (normalized)
+  repaid: BigDecimal!
   # timestamp of last repayment (null if no repayments)
   lastRepayment: Int
   # amount paid on last repayment (normalized)
@@ -49,6 +49,15 @@ type Loan @entity {
   addedBy: LoanManager!
   # number of repayments
   repayments: Int!
+}
+
+type AverageValue @entity {
+  # day id
+  id: ID!
+  # average value
+  value: BigDecimal!
+  # number of values
+  count: Int!
 }
 
 """
@@ -68,10 +77,14 @@ type MicroCredit @entity {
   # interest in each currency
   interest: [Asset!]
 
-  # number of active borrowers (users that haven't fully repaid their loan)
-  borrowers: Int
-  # number of loans totally repaid
-  repayments: Int
+  # average loan amount
+  avgLoanAmount: [AverageValue!]
+  # average loan period
+  avgLoanPeriod: [AverageValue!]
+  # number of loans ever
+  loans: Int!
+  # number of loans fully repaid
+  repaidLoans: Int!
 
   # estimated liquidity available in each currency
   liquidity: [Asset!]

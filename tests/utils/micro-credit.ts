@@ -55,6 +55,7 @@ export function createLoanAddedEvent(
 export function createLoanClaimedEvent(userAddress: string, loanId: BigInt): LoanClaimed {
     const loanClaimedEvent = changetype<LoanClaimed>(newMockEvent());
 
+    loanClaimedEvent.block.timestamp = BigInt.fromI32(1685132181);
     loanClaimedEvent.parameters = [];
     const userAddressParam = new ethereum.EventParam(
         'userAddress',
@@ -124,6 +125,7 @@ export function createRepaymentAddedEvent(
 ): RepaymentAdded {
     const repaymentAddedEvent = changetype<RepaymentAdded>(newMockEvent());
 
+    repaymentAddedEvent.block.timestamp = BigInt.fromI32(1685132181);
     repaymentAddedEvent.parameters = [];
     const userAddressParam = new ethereum.EventParam(
         'userAddress',
