@@ -47,6 +47,8 @@ type Loan @entity {
   lastDebt: BigDecimal
   # manager adding the loan
   addedBy: LoanManager!
+  # number of repayments
+  repayments: Int!
 }
 
 """
@@ -85,4 +87,6 @@ type LoanManager @entity {
   id: ID!
   # manager state
   state: Int!
+  # number of borrowers being managed
+  borrowers: Int!
 }
