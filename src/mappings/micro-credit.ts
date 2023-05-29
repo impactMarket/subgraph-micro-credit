@@ -1,5 +1,5 @@
 import { Address, BigDecimal, BigInt, store } from '@graphprotocol/graph-ts';
-import { Asset, Borrower, Loan, LoanManager, MicroCredit } from '../../generated/schema';
+import { Asset, AverageValue, Borrower, Loan, LoanManager, MicroCredit } from '../../generated/schema';
 import {
     LoanAdded,
     LoanClaimed,
@@ -17,7 +17,7 @@ export const normalize = (amount: string): BigDecimal =>
  * Generic asset entity update. It updates de array linked to the main entity and saves it.
  * @param {string} assetId Asset id
  * @param {string} asset Asset address
- * @param {BigInt} amount Amount to be added or subtracted
+ * @param {BigDecimal} amount Amount to be added or subtracted
  * @param {Array<string> | null} array Array to be updated
  * @param {boolean} isMinus Boolean to indicate if the amount should be subtracted or added
  * @returns {Array<string>} Returns updated array
@@ -62,9 +62,53 @@ function updateAsset(
     return newArray;
 }
 
+/**
+ * Generic average entity update. It updates de array linked to the main entity and saves it.
+ * @param {string} averageId Average id
+ * @param {BigDecimal} amount Amount to be averaged
+ * @param {Array<string> | null} array Array to be updated
+ * @returns {Array<string>} Returns updated array
+ */
+function updateAverage(averageId: string, amount: BigDecimal, array: Array<string> | null): Array<string> {
+    let averageUpdated = AverageValue.load(averageId);
+
+    // create average entity if it doesn't exist
+    if (!averageUpdated) {
+        averageUpdated = new AverageValue(averageId);
+        averageUpdated.value = BigDecimal.zero();
+        averageUpdated.count = 0;
+    }
+
+    let newArray = array;
+
+    // create array if it doesn't exist
+    if (!newArray) {
+        newArray = new Array<string>();
+    }
+
+    if (!newArray.includes(averageId)) {
+        newArray.push(averageId);
+    }
+
+    // update new average entity data
+    // update the "value" with the following formula "value += (amount - value) / (count + 1)"
+    averageUpdated.value = averageUpdated.value.plus(
+        amount.minus(averageUpdated.value).div(BigDecimal.fromString((averageUpdated.count + 1).toString()))
+    );
+    averageUpdated.count += 1;
+
+    // save newly created average entity
+    averageUpdated.save();
+
+    return newArray;
+}
+
 export function handleLoanAdded(event: LoanAdded): void {
     // avoid initial testnet loans causing wrong values
-    if (cUSDAddress === '0x874069fa1eb16d44d622f2e0ca25eea172369bc1' && event.block.number.toI32() < 17089331) {
+    if (
+        (cUSDAddress === '0x874069fa1eb16d44d622f2e0ca25eea172369bc1' && event.block.number.toI32() < 17089331) ||
+        event.params.userAddress.notEqual(Address.fromString('0x53927a9a4908521c637c8b0e68ade32ccfe469cb'))
+    ) {
         return;
     }
     // register loan to LoanAdded entity
@@ -83,7 +127,7 @@ export function handleLoanAdded(event: LoanAdded): void {
     loan.lastDebt = normalize(event.params.amount.toString());
     loan.period = event.params.period.toI32();
     loan.dailyInterest = normalize(event.params.dailyInterest.toString());
-    loan.repayed = BigDecimal.zero();
+    loan.repaid = BigDecimal.zero();
     loan.addedBy = event.transaction.from.toHex();
     loan.repayments = 0;
 
@@ -95,7 +139,7 @@ export function handleLoanClaimed(event: LoanClaimed): void {
     // load loan
     const borrowerLoanId = `${event.params.userAddress.toHex()}-${event.params.loanId.toString()}`;
     const loan = Loan.load(borrowerLoanId);
-    
+
     if (!loan) {
         return;
     }
@@ -108,24 +152,63 @@ export function handleLoanClaimed(event: LoanClaimed): void {
         loanManager.borrowers = 0;
     }
 
+    // update daily stats
+    const dayId = (event.block.timestamp.toI32() / 86400).toString();
+    let microCreditDaily = MicroCredit.load(dayId);
+
+    if (!microCreditDaily) {
+        microCreditDaily = new MicroCredit(dayId);
+        microCreditDaily.loans = 0;
+        microCreditDaily.repaidLoans = 0;
+    }
+
     // load or create new global micro credit entity
     let microCredit = MicroCredit.load('0');
 
     if (!microCredit) {
         microCredit = new MicroCredit('0');
-        microCredit.borrowers = 0;
-        microCredit.repayments = 0;
+        microCredit.loans = 0;
+        microCredit.repaidLoans = 0;
     }
 
     // update global micro credit entity data
     const assetBorrowedId = `borrowed-${cUSDAddress}-0`;
     const assetDebtId = `debt-${cUSDAddress}-0`;
     // const assetLiquidityId = `liquidity-${cUSDAddress}-0`;
+    const avgLoanAmountId = `avgLoanAmount-${cUSDAddress}-0`;
+    const avgLoanPeriodId = `avgLoanPeriod-${cUSDAddress}-0`;
+    // daily
+    const assetBorrowedDailyId = `borrowed-${cUSDAddress}-${dayId}`;
+    const assetDebtDailyId = `debt-${cUSDAddress}-${dayId}`;
+    const avgLoanAmountDailyId = `avgLoanAmount-${cUSDAddress}-${dayId}`;
+    const avgLoanPeriodDailyId = `avgLoanPeriod-${cUSDAddress}-${dayId}`;
 
     microCredit.borrowed = updateAsset(assetBorrowedId, cUSDAddress, loan.amount, microCredit.borrowed, false);
     microCredit.debt = updateAsset(assetDebtId, cUSDAddress, loan.amount, microCredit.debt, false);
     // microCredit.liquidity = updateAsset(assetLiquidityId, cUSDAddress, loan.amount, microCredit.liquidity, true);
-    microCredit.borrowers += 1;
+    microCredit.loans += 1;
+    microCredit.avgLoanAmount = updateAverage(avgLoanAmountId, loan.amount, microCredit.avgLoanAmount);
+    microCredit.avgLoanPeriod = updateAverage(
+        avgLoanPeriodId,
+        BigDecimal.fromString(loan.period.toString()),
+        microCredit.avgLoanPeriod
+    );
+
+    microCreditDaily.borrowed = updateAsset(
+        assetBorrowedDailyId,
+        cUSDAddress,
+        loan.amount,
+        microCreditDaily.borrowed,
+        false
+    );
+    microCreditDaily.debt = updateAsset(assetDebtDailyId, cUSDAddress, loan.amount, microCreditDaily.debt, false);
+    microCreditDaily.loans += 1;
+    microCreditDaily.avgLoanAmount = updateAverage(avgLoanAmountDailyId, loan.amount, microCreditDaily.avgLoanAmount);
+    microCreditDaily.avgLoanPeriod = updateAverage(
+        avgLoanPeriodDailyId,
+        BigDecimal.fromString(loan.period.toString()),
+        microCreditDaily.avgLoanPeriod
+    );
 
     // update loan entity data
     loan.claimed = event.block.timestamp.toI32();
@@ -135,6 +218,7 @@ export function handleLoanClaimed(event: LoanClaimed): void {
     // save entities
     loan.save();
     microCredit.save();
+    microCreditDaily.save();
     loanManager.save();
 }
 
@@ -190,9 +274,19 @@ export function handleManagerRemoved(event: ManagerRemoved): void {
 export function handleRepaymentAdded(event: RepaymentAdded): void {
     const borrowerLoanId = `${event.params.userAddress.toHex()}-${event.params.loanId.toString()}`;
     const loan = Loan.load(borrowerLoanId);
-    
+
     if (!loan) {
         return;
+    }
+
+    // update daily stats
+    const dayId = (event.block.timestamp.toI32() / 86400).toString();
+    let microCreditDaily = MicroCredit.load(dayId);
+
+    if (!microCreditDaily) {
+        microCreditDaily = new MicroCredit(dayId);
+        microCreditDaily.loans = 0;
+        microCreditDaily.repaidLoans = 0;
     }
 
     // load or create new global micro credit entity
@@ -200,11 +294,15 @@ export function handleRepaymentAdded(event: RepaymentAdded): void {
 
     if (!microCredit) {
         microCredit = new MicroCredit('0');
-        microCredit.borrowers = 0;
-        microCredit.repayments = 0;
+        microCredit.loans = 0;
+        microCredit.repaidLoans = 0;
     }
 
     const assetDebtdId = `debt-${cUSDAddress}-0`;
+
+    // NOTE: on daily states, debt is the debt accrued. Repaid is separated.
+    // On global state, debt is the total debt
+    // so we don't calculate debt here
 
     // a litle trcik to keep the current debt always updated
     // first we subtract the last added debt, and then we add the current debt
@@ -221,28 +319,38 @@ export function handleRepaymentAdded(event: RepaymentAdded): void {
     );
 
     // update loan entity data
-    loan.repayed = loan.repayed.plus(normalize(event.params.repaymentAmount.toString()));
+    loan.repaid = loan.repaid.plus(normalize(event.params.repaymentAmount.toString()));
     loan.lastRepayment = event.block.timestamp.toI32();
     loan.lastRepaymentAmount = normalize(event.params.repaymentAmount.toString());
     loan.lastDebt = normalize(event.params.currentDebt.toString());
     loan.repayments += 1;
 
-    // update full repayed loans and interest
+    // update full repaid loans and interest
     if (event.params.currentDebt.equals(BigInt.fromI32(0))) {
-        microCredit.repayments += 1;
+        microCredit.repaidLoans += 1;
+        microCreditDaily.repaidLoans += 1;
 
         const assetInterestdId = `interest-${cUSDAddress}-0`;
+        const assetInterestdDailyId = `interest-${cUSDAddress}-${dayId}`;
 
         microCredit.interest = updateAsset(
             assetInterestdId,
             cUSDAddress,
-            loan.repayed.minus(loan.amount),
+            loan.repaid.minus(loan.amount),
             microCredit.interest,
+            false
+        );
+        microCreditDaily.interest = updateAsset(
+            assetInterestdDailyId,
+            cUSDAddress,
+            loan.repaid.minus(loan.amount),
+            microCreditDaily.interest,
             false
         );
     }
     // update global micro credit entity data
     const assetRepaidId = `repaid-${cUSDAddress}-0`;
+    const assetRepaidDailyId = `repaid-${cUSDAddress}-${dayId}`;
 
     microCredit.repaid = updateAsset(
         assetRepaidId,
@@ -251,7 +359,15 @@ export function handleRepaymentAdded(event: RepaymentAdded): void {
         microCredit.repaid,
         false
     );
+    microCreditDaily.repaid = updateAsset(
+        assetRepaidDailyId,
+        cUSDAddress,
+        normalize(event.params.repaymentAmount.toString()),
+        microCreditDaily.repaid,
+        false
+    );
 
     loan.save();
     microCredit.save();
+    microCreditDaily.save();
 }
