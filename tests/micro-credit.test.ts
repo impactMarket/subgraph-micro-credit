@@ -1,5 +1,5 @@
 import { BigDecimal, BigInt } from '@graphprotocol/graph-ts';
-import { assert, clearStore, test } from 'matchstick-as/assembly/index';
+import { assert, clearStore, logStore, test } from 'matchstick-as/assembly/index';
 import { cUSDAddress, toToken, userAddress } from './utils/contants';
 import {
     createLoanAddedEvent,

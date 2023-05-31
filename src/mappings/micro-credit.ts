@@ -107,7 +107,8 @@ export function handleLoanAdded(event: LoanAdded): void {
     // avoid initial testnet loans causing wrong values
     if (
         (cUSDAddress === '0x874069fa1eb16d44d622f2e0ca25eea172369bc1' && event.block.number.toI32() < 17089331) ||
-        event.params.userAddress.notEqual(Address.fromString('0x53927a9a4908521c637c8b0e68ade32ccfe469cb'))
+        event.params.userAddress.equals(Address.fromString('0x53927a9a4908521c637c8b0e68ade32ccfe469cb')) ||
+        event.params.userAddress.equals(Address.fromString('0xa41261d4ad48104aa9c3f81c2e3e4d7fd0a6f160'))
     ) {
         return;
     }
@@ -143,6 +144,7 @@ export function handleLoanClaimed(event: LoanClaimed): void {
     if (!loan) {
         return;
     }
+    const borrower = Borrower.load(event.params.userAddress.toHex())!;
     const loanManagerId = loan.addedBy;
     let loanManager = LoanManager.load(loanManagerId);
 
@@ -150,6 +152,7 @@ export function handleLoanClaimed(event: LoanClaimed): void {
         loanManager = new LoanManager(loanManagerId);
         loanManager.state = 0;
         loanManager.borrowers = 0;
+        loanManager.loans = 0;
     }
 
     // update daily stats
@@ -213,7 +216,10 @@ export function handleLoanClaimed(event: LoanClaimed): void {
     // update loan entity data
     loan.claimed = event.block.timestamp.toI32();
 
-    loanManager.borrowers += 1;
+    if (borrower.loans.length === 1) {
+        loanManager.borrowers += 1;
+    }
+    loanManager.loans += 1;
 
     // save entities
     loan.save();
@@ -251,23 +257,24 @@ export function handleUserAddressChanged(event: UserAddressChanged): void {
 
 // update LoanManager entity id
 export function handleManagerAdded(event: ManagerAdded): void {
-    let loanManagerAccount = LoanManager.load(event.params.managerAddress.toHex());
+    let loanManager = LoanManager.load(event.params.managerAddress.toHex());
 
-    if (!loanManagerAccount) {
-        loanManagerAccount = new LoanManager(event.params.managerAddress.toHex());
-        loanManagerAccount.borrowers = 0;
+    if (!loanManager) {
+        loanManager = new LoanManager(event.params.managerAddress.toHex());
+        loanManager.borrowers = 0;
+        loanManager.loans = 0;
     }
 
-    loanManagerAccount.state = 0;
-    loanManagerAccount.save();
+    loanManager.state = 0;
+    loanManager.save();
 }
 
 export function handleManagerRemoved(event: ManagerRemoved): void {
-    const loanManagerAccount = LoanManager.load(event.params.managerAddress.toHex());
+    const loanManager = LoanManager.load(event.params.managerAddress.toHex());
 
-    if (loanManagerAccount) {
-        loanManagerAccount.state = 1;
-        loanManagerAccount.save();
+    if (loanManager) {
+        loanManager.state = 1;
+        loanManager.save();
     }
 }
 

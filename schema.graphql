@@ -102,4 +102,6 @@ type LoanManager @entity {
   state: Int!
   # number of borrowers being managed
   borrowers: Int!
+  # number of loans ever managed (current + repaid)
+  loans: Int!
 }
