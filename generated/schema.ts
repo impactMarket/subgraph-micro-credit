@@ -516,4 +516,13 @@ export class LoanManager extends Entity {
   set borrowers(value: i32) {
     this.set("borrowers", Value.fromI32(value));
   }
+
+  get loans(): i32 {
+    let value = this.get("loans");
+    return value!.toI32();
+  }
+
+  set loans(value: i32) {
+    this.set("loans", Value.fromI32(value));
+  }
 }
