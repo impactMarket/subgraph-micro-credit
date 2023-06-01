@@ -100,6 +100,15 @@ export class Borrower extends Entity {
   set loans(value: Array<string>) {
     this.set("loans", Value.fromStringArray(value));
   }
+
+  get loansCount(): i32 {
+    let value = this.get("loansCount");
+    return value!.toI32();
+  }
+
+  set loansCount(value: i32) {
+    this.set("loansCount", Value.fromI32(value));
+  }
 }
 
 export class Loan extends Entity {

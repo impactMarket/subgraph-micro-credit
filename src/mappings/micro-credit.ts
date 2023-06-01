@@ -121,6 +121,7 @@ export function handleLoanAdded(event: LoanAdded): void {
     if (!borrower) {
         // create borrower entity
         borrower = new Borrower(event.params.userAddress.toHex());
+        borrower.loansCount = 0;
     }
 
     loan.borrower = event.params.userAddress.toHex();
@@ -216,7 +217,8 @@ export function handleLoanClaimed(event: LoanClaimed): void {
     // update loan entity data
     loan.claimed = event.block.timestamp.toI32();
 
-    if (borrower.loans.length === 1) {
+    borrower.loansCount += 1;
+    if (borrower.loansCount === 1) {
         loanManager.borrowers += 1;
     }
     loanManager.loans += 1;

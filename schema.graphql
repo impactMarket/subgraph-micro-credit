@@ -19,6 +19,8 @@ type Borrower @entity {
   id: ID!
   # borrower loans
   loans: [Loan!]! @derivedFrom(field: "borrower")
+  # number of loans
+  loansCount: Int!
 }
 
 """
