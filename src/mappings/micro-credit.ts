@@ -383,11 +383,16 @@ export function handleRepaymentAdded(event: RepaymentAdded): void {
 }
 
 export function handleManagerChanged(event: ManagerChanged): void {
+    const loanManager = LoanManager.load(event.params.managerAddress.toHex())!;
     const borrower = Borrower.load(event.params.borrowerAddress.toHex())!;
     const loan = Loan.load(`${event.params.borrowerAddress.toHex()}-${(borrower.loansCount - 1).toString()}`)!;
 
     if (loan) {
+        loanManager.borrowers += 1;
+        loanManager.loans += 1;
         loan.addedBy = event.params.managerAddress.toHex();
+
+        loanManager.save();
         loan.save();
     }
 }
