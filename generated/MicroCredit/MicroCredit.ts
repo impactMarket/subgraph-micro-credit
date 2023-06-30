@@ -158,6 +158,28 @@ export class ManagerRemoved__Params {
   }
 }
 
+export class ManagerChanged extends ethereum.Event {
+  get params(): ManagerChanged__Params {
+    return new ManagerChanged__Params(this);
+  }
+}
+
+export class ManagerChanged__Params {
+  _event: ManagerChanged;
+
+  constructor(event: ManagerChanged) {
+    this._event = event;
+  }
+
+  get borrowerAddress(): Address {
+    return this._event.parameters[0].value.toAddress();
+  }
+
+  get managerAddress(): Address {
+    return this._event.parameters[1].value.toAddress();
+  }
+}
+
 export class MicroCredit extends ethereum.SmartContract {
   static bind(address: Address): MicroCredit {
     return new MicroCredit("MicroCredit", address);

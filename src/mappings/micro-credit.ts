@@ -4,6 +4,7 @@ import {
     LoanAdded,
     LoanClaimed,
     ManagerAdded,
+    ManagerChanged,
     ManagerRemoved,
     RepaymentAdded,
     UserAddressChanged
@@ -379,4 +380,14 @@ export function handleRepaymentAdded(event: RepaymentAdded): void {
     loan.save();
     microCredit.save();
     microCreditDaily.save();
+}
+
+export function handleManagerChanged(event: ManagerChanged): void {
+    const borrower = Borrower.load(event.params.borrowerAddress.toHex())!;
+    const loan = Loan.load(`${event.params.borrowerAddress.toHex()}-${(borrower.loansCount - 1).toString()}`)!;
+
+    if (loan) {
+        loan.addedBy = event.params.managerAddress.toHex();
+        loan.save();
+    }
 }

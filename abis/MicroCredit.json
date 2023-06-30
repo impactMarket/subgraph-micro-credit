@@ -52,5 +52,14 @@
         "name": "ManagerRemoved",
         "inputs": [{ "type": "address", "name": "managerAddress", "internalType": "address", "indexed": true }],
         "anonymous": false
+    },
+    {
+        "type": "event",
+        "name": "ManagerChanged",
+        "inputs": [
+            { "type": "address", "name": "borrowerAddress", "internalType": "address", "indexed": true },
+            { "type": "address", "name": "managerAddress", "internalType": "address", "indexed": true }
+        ],
+        "anonymous": false
     }
 ]

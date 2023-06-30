@@ -32,4 +32,6 @@ dataSources:
           handler: handleManagerRemoved
         - event: RepaymentAdded(indexed address,uint256,uint256,uint256)
           handler: handleRepaymentAdded
+        - event: ManagerChanged(indexed address,indexed address)
+          handler: handleManagerChanged
       file: ./src/mappings/micro-credit.ts
