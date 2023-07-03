@@ -109,6 +109,15 @@ export class Borrower extends Entity {
   set loansCount(value: i32) {
     this.set("loansCount", Value.fromI32(value));
   }
+
+  get lastLoanStatus(): i32 {
+    let value = this.get("lastLoanStatus");
+    return value!.toI32();
+  }
+
+  set lastLoanStatus(value: i32) {
+    this.set("lastLoanStatus", Value.fromI32(value));
+  }
 }
 
 export class Loan extends Entity {
@@ -140,6 +149,15 @@ export class Loan extends Entity {
 
   set id(value: string) {
     this.set("id", Value.fromString(value));
+  }
+
+  get index(): i32 {
+    let value = this.get("index");
+    return value!.toI32();
+  }
+
+  set index(value: i32) {
+    this.set("index", Value.fromI32(value));
   }
 
   get borrower(): string {

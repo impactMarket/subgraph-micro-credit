@@ -21,6 +21,8 @@ type Borrower @entity {
   loans: [Loan!]! @derivedFrom(field: "borrower")
   # number of loans
   loansCount: Int!
+  # last loan status - 0: pending, 1: active, 2: repaid, 3: canceled
+  lastLoanStatus: Int!
 }
 
 """
@@ -29,6 +31,8 @@ Loan entity
 type Loan @entity {
   # loan id {userAdreress}-{loanId}
   id: ID!
+  # loan index
+  index: Int!
   # borrower address
   borrower: Borrower!
   # loan amount

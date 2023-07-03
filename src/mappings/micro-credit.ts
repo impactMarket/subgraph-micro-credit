@@ -124,7 +124,8 @@ export function handleLoanAdded(event: LoanAdded): void {
         borrower = new Borrower(event.params.userAddress.toHex());
         borrower.loansCount = 0;
     }
-
+    
+    borrower.lastLoanStatus = 0;
     loan.borrower = event.params.userAddress.toHex();
     loan.amount = normalize(event.params.amount.toString());
     loan.lastDebt = normalize(event.params.amount.toString());
@@ -133,6 +134,7 @@ export function handleLoanAdded(event: LoanAdded): void {
     loan.repaid = BigDecimal.zero();
     loan.addedBy = event.transaction.from.toHex();
     loan.repayments = 0;
+    loan.index = event.params.loanId.toI32();
 
     loan.save();
     borrower.save();
@@ -219,6 +221,7 @@ export function handleLoanClaimed(event: LoanClaimed): void {
     loan.claimed = event.block.timestamp.toI32();
 
     borrower.loansCount += 1;
+    borrower.lastLoanStatus = 1;
     if (borrower.loansCount === 1) {
         loanManager.borrowers += 1;
     }
@@ -226,6 +229,7 @@ export function handleLoanClaimed(event: LoanClaimed): void {
 
     // save entities
     loan.save();
+    borrower.save();
     microCredit.save();
     microCreditDaily.save();
     loanManager.save();
@@ -288,6 +292,7 @@ export function handleRepaymentAdded(event: RepaymentAdded): void {
     if (!loan) {
         return;
     }
+    const borrower = Borrower.load(event.params.userAddress.toHex())!;
 
     // update daily stats
     const dayId = (event.block.timestamp.toI32() / 86400).toString();
@@ -339,6 +344,7 @@ export function handleRepaymentAdded(event: RepaymentAdded): void {
     if (event.params.currentDebt.equals(BigInt.fromI32(0))) {
         microCredit.repaidLoans += 1;
         microCreditDaily.repaidLoans += 1;
+        borrower.lastLoanStatus = 2;
 
         const assetInterestdId = `interest-${cUSDAddress}-0`;
         const assetInterestdDailyId = `interest-${cUSDAddress}-${dayId}`;
@@ -378,16 +384,22 @@ export function handleRepaymentAdded(event: RepaymentAdded): void {
     );
 
     loan.save();
+    borrower.save();
     microCredit.save();
     microCreditDaily.save();
 }
 
 export function handleManagerChanged(event: ManagerChanged): void {
+    const loanManager = LoanManager.load(event.params.managerAddress.toHex())!;
     const borrower = Borrower.load(event.params.borrowerAddress.toHex())!;
     const loan = Loan.load(`${event.params.borrowerAddress.toHex()}-${(borrower.loansCount - 1).toString()}`)!;
 
     if (loan) {
+        loanManager.borrowers += 1;
+        loanManager.loans += 1;
         loan.addedBy = event.params.managerAddress.toHex();
+
+        loanManager.save();
         loan.save();
     }
 }
