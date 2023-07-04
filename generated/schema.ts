@@ -118,6 +118,115 @@ export class Borrower extends Entity {
   set lastLoanStatus(value: i32) {
     this.set("lastLoanStatus", Value.fromI32(value));
   }
+
+  get lastLoanAmount(): BigDecimal {
+    let value = this.get("lastLoanAmount");
+    return value!.toBigDecimal();
+  }
+
+  set lastLoanAmount(value: BigDecimal) {
+    this.set("lastLoanAmount", Value.fromBigDecimal(value));
+  }
+
+  get lastLoanPeriod(): i32 {
+    let value = this.get("lastLoanPeriod");
+    return value!.toI32();
+  }
+
+  set lastLoanPeriod(value: i32) {
+    this.set("lastLoanPeriod", Value.fromI32(value));
+  }
+
+  get lastLoanDailyInterest(): BigDecimal {
+    let value = this.get("lastLoanDailyInterest");
+    return value!.toBigDecimal();
+  }
+
+  set lastLoanDailyInterest(value: BigDecimal) {
+    this.set("lastLoanDailyInterest", Value.fromBigDecimal(value));
+  }
+
+  get lastLoanClaimed(): i32 {
+    let value = this.get("lastLoanClaimed");
+    return value!.toI32();
+  }
+
+  set lastLoanClaimed(value: i32) {
+    this.set("lastLoanClaimed", Value.fromI32(value));
+  }
+
+  get lastLoanRepaid(): BigDecimal {
+    let value = this.get("lastLoanRepaid");
+    return value!.toBigDecimal();
+  }
+
+  set lastLoanRepaid(value: BigDecimal) {
+    this.set("lastLoanRepaid", Value.fromBigDecimal(value));
+  }
+
+  get lastLoanLastRepayment(): i32 {
+    let value = this.get("lastLoanLastRepayment");
+    return value!.toI32();
+  }
+
+  set lastLoanLastRepayment(value: i32) {
+    this.set("lastLoanLastRepayment", Value.fromI32(value));
+  }
+
+  get lastLoanLastRepaymentAmount(): BigDecimal | null {
+    let value = this.get("lastLoanLastRepaymentAmount");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toBigDecimal();
+    }
+  }
+
+  set lastLoanLastRepaymentAmount(value: BigDecimal | null) {
+    if (!value) {
+      this.unset("lastLoanLastRepaymentAmount");
+    } else {
+      this.set(
+        "lastLoanLastRepaymentAmount",
+        Value.fromBigDecimal(<BigDecimal>value)
+      );
+    }
+  }
+
+  get lastLoanLastDebt(): BigDecimal | null {
+    let value = this.get("lastLoanLastDebt");
+    if (!value || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toBigDecimal();
+    }
+  }
+
+  set lastLoanLastDebt(value: BigDecimal | null) {
+    if (!value) {
+      this.unset("lastLoanLastDebt");
+    } else {
+      this.set("lastLoanLastDebt", Value.fromBigDecimal(<BigDecimal>value));
+    }
+  }
+
+  get lastLoanAddedBy(): string {
+    let value = this.get("lastLoanAddedBy");
+    return value!.toString();
+  }
+
+  set lastLoanAddedBy(value: string) {
+    this.set("lastLoanAddedBy", Value.fromString(value));
+  }
+
+  get lastLoanRepayments(): i32 {
+    let value = this.get("lastLoanRepayments");
+    return value!.toI32();
+  }
+
+  set lastLoanRepayments(value: i32) {
+    this.set("lastLoanRepayments", Value.fromI32(value));
+  }
 }
 
 export class Loan extends Entity {

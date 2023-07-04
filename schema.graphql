@@ -23,6 +23,27 @@ type Borrower @entity {
   loansCount: Int!
   # last loan status - 0: pending, 1: active, 2: repaid, 3: canceled
   lastLoanStatus: Int!
+  # below are all loan fields duplicated, for query list purposes!
+  # loan amount
+  lastLoanAmount: BigDecimal!
+  # loan period (maturation date)
+  lastLoanPeriod: Int!
+  # loan interest (in % / day)
+  lastLoanDailyInterest: BigDecimal!
+  # timestamp if loan was claimed, otherwise null
+  lastLoanClaimed: Int
+  # amount repaid (normalized)
+  lastLoanRepaid: BigDecimal!
+  # timestamp of last repayment (null if no repayments)
+  lastLoanLastRepayment: Int
+  # amount paid on last repayment (normalized)
+  lastLoanLastRepaymentAmount: BigDecimal
+  # debt after the last repayment (normalized)
+  lastLoanLastDebt: BigDecimal
+  # manager adding the loan
+  lastLoanAddedBy: LoanManager!
+  # number of repayments
+  lastLoanRepayments: Int!
 }
 
 """
