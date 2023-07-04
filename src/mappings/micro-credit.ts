@@ -135,6 +135,14 @@ export function handleLoanAdded(event: LoanAdded): void {
     loan.addedBy = event.transaction.from.toHex();
     loan.repayments = 0;
     loan.index = event.params.loanId.toI32();
+    //
+    borrower.lastLoanAmount = normalize(event.params.amount.toString());
+    borrower.lastLoanLastDebt = normalize(event.params.amount.toString());
+    borrower.lastLoanPeriod = event.params.period.toI32();
+    borrower.lastLoanDailyInterest = normalize(event.params.dailyInterest.toString());
+    borrower.lastLoanRepaid = BigDecimal.zero();
+    borrower.lastLoanAddedBy = event.transaction.from.toHex();
+    borrower.lastLoanRepayments = 0;
 
     loan.save();
     borrower.save();
@@ -219,6 +227,7 @@ export function handleLoanClaimed(event: LoanClaimed): void {
 
     // update loan entity data
     loan.claimed = event.block.timestamp.toI32();
+    borrower.lastLoanClaimed = event.block.timestamp.toI32();
 
     borrower.loansCount += 1;
     borrower.lastLoanStatus = 1;
@@ -339,6 +348,12 @@ export function handleRepaymentAdded(event: RepaymentAdded): void {
     loan.lastRepaymentAmount = normalize(event.params.repaymentAmount.toString());
     loan.lastDebt = normalize(event.params.currentDebt.toString());
     loan.repayments += 1;
+    // update borrower last loan entity data
+    borrower.lastLoanRepaid = borrower.lastLoanRepaid.plus(normalize(event.params.repaymentAmount.toString()));
+    borrower.lastLoanLastRepayment = event.block.timestamp.toI32();
+    borrower.lastLoanLastRepaymentAmount = normalize(event.params.repaymentAmount.toString());
+    borrower.lastLoanLastDebt = normalize(event.params.currentDebt.toString());
+    borrower.lastLoanRepayments += 1;
 
     // update full repaid loans and interest
     if (event.params.currentDebt.equals(BigInt.fromI32(0))) {
