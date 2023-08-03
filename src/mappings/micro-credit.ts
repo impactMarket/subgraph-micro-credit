@@ -1,9 +1,10 @@
 import { Address, BigDecimal, BigInt, store } from '@graphprotocol/graph-ts';
-import { Asset, AverageValue, Borrower, Loan, LoanManager, MicroCredit } from '../../generated/schema';
+import { Asset, AverageValue, Borrower, Loan, LoanManager, MicroCredit, Repayment } from '../../generated/schema';
 import {
     LoanAdded,
     LoanClaimed,
     ManagerAdded,
+    ManagerAdded1,
     ManagerChanged,
     ManagerRemoved,
     RepaymentAdded,
@@ -123,8 +124,10 @@ export function handleLoanAdded(event: LoanAdded): void {
         // create borrower entity
         borrower = new Borrower(event.params.userAddress.toHex());
         borrower.loansCount = 0;
+        // borrower.repayments = new Array<string>();
+        borrower.repaymentsCount = 0;
     }
-    
+
     borrower.lastLoanStatus = 0;
     loan.borrower = event.params.userAddress.toHex();
     loan.amount = normalize(event.params.amount.toString());
@@ -133,7 +136,7 @@ export function handleLoanAdded(event: LoanAdded): void {
     loan.dailyInterest = normalize(event.params.dailyInterest.toString());
     loan.repaid = BigDecimal.zero();
     loan.addedBy = event.transaction.from.toHex();
-    loan.repayments = 0;
+    loan.repaymentsCount = 0;
     loan.index = event.params.loanId.toI32();
     //
     borrower.lastLoanAmount = normalize(event.params.amount.toString());
@@ -143,6 +146,9 @@ export function handleLoanAdded(event: LoanAdded): void {
     borrower.lastLoanRepaid = BigDecimal.zero();
     borrower.lastLoanAddedBy = event.transaction.from.toHex();
     borrower.lastLoanRepayments = 0;
+    // need to nullify these values
+    borrower.lastLoanLastRepayment = null;
+    borrower.lastLoanLastRepaymentAmount = null;
 
     loan.save();
     borrower.save();
@@ -285,6 +291,20 @@ export function handleManagerAdded(event: ManagerAdded): void {
     loanManager.save();
 }
 
+// update LoanManager entity id
+export function handleManagerAdded1(event: ManagerAdded1): void {
+    let loanManager = LoanManager.load(event.params.managerAddress.toHex());
+
+    if (!loanManager) {
+        loanManager = new LoanManager(event.params.managerAddress.toHex());
+        loanManager.borrowers = 0;
+        loanManager.loans = 0;
+    }
+
+    loanManager.state = 0;
+    loanManager.save();
+}
+
 export function handleManagerRemoved(event: ManagerRemoved): void {
     const loanManager = LoanManager.load(event.params.managerAddress.toHex());
 
@@ -302,6 +322,13 @@ export function handleRepaymentAdded(event: RepaymentAdded): void {
         return;
     }
     const borrower = Borrower.load(event.params.userAddress.toHex())!;
+    const repaymentId = `${event.params.userAddress.toHex()}-${event.params.loanId.toString()}-${borrower.repaymentsCount.toString()}`;
+    const repayment = new Repayment(repaymentId);
+
+    repayment.borrower = borrower.id;
+    repayment.amount = normalize(event.params.repaymentAmount.toString());
+    repayment.timestamp = event.block.timestamp.toI32();
+    repayment.debt = normalize(event.params.currentDebt.toString());
 
     // update daily stats
     const dayId = (event.block.timestamp.toI32() / 86400).toString();
@@ -347,13 +374,14 @@ export function handleRepaymentAdded(event: RepaymentAdded): void {
     loan.lastRepayment = event.block.timestamp.toI32();
     loan.lastRepaymentAmount = normalize(event.params.repaymentAmount.toString());
     loan.lastDebt = normalize(event.params.currentDebt.toString());
-    loan.repayments += 1;
+    loan.repaymentsCount += 1;
     // update borrower last loan entity data
     borrower.lastLoanRepaid = borrower.lastLoanRepaid.plus(normalize(event.params.repaymentAmount.toString()));
     borrower.lastLoanLastRepayment = event.block.timestamp.toI32();
     borrower.lastLoanLastRepaymentAmount = normalize(event.params.repaymentAmount.toString());
     borrower.lastLoanLastDebt = normalize(event.params.currentDebt.toString());
     borrower.lastLoanRepayments += 1;
+    borrower.repaymentsCount += 1;
 
     // update full repaid loans and interest
     if (event.params.currentDebt.equals(BigInt.fromI32(0))) {
@@ -400,21 +428,27 @@ export function handleRepaymentAdded(event: RepaymentAdded): void {
 
     loan.save();
     borrower.save();
+    repayment.save();
     microCredit.save();
     microCreditDaily.save();
 }
 
 export function handleManagerChanged(event: ManagerChanged): void {
-    const loanManager = LoanManager.load(event.params.managerAddress.toHex())!;
-    const borrower = Borrower.load(event.params.borrowerAddress.toHex())!;
-    const loan = Loan.load(`${event.params.borrowerAddress.toHex()}-${(borrower.loansCount - 1).toString()}`)!;
+    const loanManager = LoanManager.load(event.params.managerAddress.toHex());
+    const borrower = Borrower.load(event.params.borrowerAddress.toHex());
 
-    if (loan) {
-        loanManager.borrowers += 1;
-        loanManager.loans += 1;
-        loan.addedBy = event.params.managerAddress.toHex();
+    if (loanManager && borrower) {
+        const loan = Loan.load(`${event.params.borrowerAddress.toHex()}-${(borrower.loansCount - 1).toString()}`);
 
-        loanManager.save();
-        loan.save();
+        if (loan) {
+            loanManager.borrowers += 1;
+            loanManager.loans += 1;
+            loan.addedBy = event.params.managerAddress.toHex();
+            borrower.lastLoanAddedBy = event.params.managerAddress.toHex();
+
+            loanManager.save();
+            loan.save();
+            borrower.save();
+        }
     }
 }

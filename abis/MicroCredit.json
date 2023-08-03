@@ -49,6 +49,15 @@
     },
     {
         "type": "event",
+        "name": "ManagerAdded",
+        "inputs": [
+            { "type": "address", "name": "managerAddress", "internalType": "address", "indexed": true },
+            { "type": "uint256", "name": "currentLentAmountLimit", "internalType": "uint256", "indexed": false }
+        ],
+        "anonymous": false
+    },
+    {
+        "type": "event",
         "name": "ManagerRemoved",
         "inputs": [{ "type": "address", "name": "managerAddress", "internalType": "address", "indexed": true }],
         "anonymous": false
