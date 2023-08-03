@@ -140,6 +140,28 @@ export class ManagerAdded__Params {
   }
 }
 
+export class ManagerAdded1 extends ethereum.Event {
+  get params(): ManagerAdded1__Params {
+    return new ManagerAdded1__Params(this);
+  }
+}
+
+export class ManagerAdded1__Params {
+  _event: ManagerAdded1;
+
+  constructor(event: ManagerAdded1) {
+    this._event = event;
+  }
+
+  get managerAddress(): Address {
+    return this._event.parameters[0].value.toAddress();
+  }
+
+  get currentLentAmountLimit(): BigInt {
+    return this._event.parameters[1].value.toBigInt();
+  }
+}
+
 export class ManagerRemoved extends ethereum.Event {
   get params(): ManagerRemoved__Params {
     return new ManagerRemoved__Params(this);

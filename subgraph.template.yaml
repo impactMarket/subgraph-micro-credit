@@ -28,6 +28,8 @@ dataSources:
           handler: handleUserAddressChanged
         - event: ManagerAdded(indexed address)
           handler: handleManagerAdded
+        - event: ManagerAdded(indexed address,uint256)
+          handler: handleManagerAdded1
         - event: ManagerRemoved(indexed address)
           handler: handleManagerRemoved
         - event: RepaymentAdded(indexed address,uint256,uint256,uint256)
