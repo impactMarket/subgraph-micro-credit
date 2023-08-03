@@ -44,6 +44,10 @@ type Borrower @entity {
   lastLoanAddedBy: LoanManager!
   # number of repayments
   lastLoanRepayments: Int!
+  # repayments of all loans
+  repayments: [Repayment!]! @derivedFrom(field: "borrower")
+  # number of repayments ever
+  repaymentsCount: Int!
 }
 
 """
@@ -75,7 +79,20 @@ type Loan @entity {
   # manager adding the loan
   addedBy: LoanManager!
   # number of repayments
-  repayments: Int!
+  repaymentsCount: Int!
+}
+
+type Repayment @entity {
+  # repayment id {borrower}-{loanId}-{repaymentId}
+  id: ID!
+  # borrower
+  borrower: Borrower!
+  # amount paid (normalized)
+  amount: BigDecimal!
+  # timestamp
+  timestamp: Int!
+  # debt after the repayment (normalized)
+  debt: BigDecimal!
 }
 
 type AverageValue @entity {

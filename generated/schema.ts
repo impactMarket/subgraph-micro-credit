@@ -227,6 +227,24 @@ export class Borrower extends Entity {
   set lastLoanRepayments(value: i32) {
     this.set("lastLoanRepayments", Value.fromI32(value));
   }
+
+  get repayments(): Array<string> {
+    let value = this.get("repayments");
+    return value!.toStringArray();
+  }
+
+  set repayments(value: Array<string>) {
+    this.set("repayments", Value.fromStringArray(value));
+  }
+
+  get repaymentsCount(): i32 {
+    let value = this.get("repaymentsCount");
+    return value!.toI32();
+  }
+
+  set repaymentsCount(value: i32) {
+    this.set("repaymentsCount", Value.fromI32(value));
+  }
 }
 
 export class Loan extends Entity {
@@ -375,13 +393,81 @@ export class Loan extends Entity {
     this.set("addedBy", Value.fromString(value));
   }
 
-  get repayments(): i32 {
-    let value = this.get("repayments");
+  get repaymentsCount(): i32 {
+    let value = this.get("repaymentsCount");
     return value!.toI32();
   }
 
-  set repayments(value: i32) {
-    this.set("repayments", Value.fromI32(value));
+  set repaymentsCount(value: i32) {
+    this.set("repaymentsCount", Value.fromI32(value));
+  }
+}
+
+export class Repayment extends Entity {
+  constructor(id: string) {
+    super();
+    this.set("id", Value.fromString(id));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(id != null, "Cannot save Repayment entity without an ID");
+    if (id) {
+      assert(
+        id.kind == ValueKind.STRING,
+        `Entities of type Repayment must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+      );
+      store.set("Repayment", id.toString(), this);
+    }
+  }
+
+  static load(id: string): Repayment | null {
+    return changetype<Repayment | null>(store.get("Repayment", id));
+  }
+
+  get id(): string {
+    let value = this.get("id");
+    return value!.toString();
+  }
+
+  set id(value: string) {
+    this.set("id", Value.fromString(value));
+  }
+
+  get borrower(): string {
+    let value = this.get("borrower");
+    return value!.toString();
+  }
+
+  set borrower(value: string) {
+    this.set("borrower", Value.fromString(value));
+  }
+
+  get amount(): BigDecimal {
+    let value = this.get("amount");
+    return value!.toBigDecimal();
+  }
+
+  set amount(value: BigDecimal) {
+    this.set("amount", Value.fromBigDecimal(value));
+  }
+
+  get timestamp(): i32 {
+    let value = this.get("timestamp");
+    return value!.toI32();
+  }
+
+  set timestamp(value: i32) {
+    this.set("timestamp", Value.fromI32(value));
+  }
+
+  get debt(): BigDecimal {
+    let value = this.get("debt");
+    return value!.toBigDecimal();
+  }
+
+  set debt(value: BigDecimal) {
+    this.set("debt", Value.fromBigDecimal(value));
   }
 }
 
