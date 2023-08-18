@@ -245,6 +245,15 @@ export class Borrower extends Entity {
   set repaymentsCount(value: i32) {
     this.set("repaymentsCount", Value.fromI32(value));
   }
+
+  get entityLastUpdated(): i32 {
+    let value = this.get("entityLastUpdated");
+    return value!.toI32();
+  }
+
+  set entityLastUpdated(value: i32) {
+    this.set("entityLastUpdated", Value.fromI32(value));
+  }
 }
 
 export class Loan extends Entity {

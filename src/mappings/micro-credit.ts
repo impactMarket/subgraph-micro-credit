@@ -149,6 +149,7 @@ export function handleLoanAdded(event: LoanAdded): void {
     // need to nullify these values
     borrower.lastLoanLastRepayment = null;
     borrower.lastLoanLastRepaymentAmount = null;
+    borrower.entityLastUpdated = event.block.timestamp.toI32();
 
     loan.save();
     borrower.save();
@@ -237,6 +238,7 @@ export function handleLoanClaimed(event: LoanClaimed): void {
 
     borrower.loansCount += 1;
     borrower.lastLoanStatus = 1;
+    borrower.entityLastUpdated = event.block.timestamp.toI32();
     if (borrower.loansCount === 1) {
         loanManager.borrowers += 1;
     }
@@ -382,6 +384,7 @@ export function handleRepaymentAdded(event: RepaymentAdded): void {
     borrower.lastLoanLastDebt = normalize(event.params.currentDebt.toString());
     borrower.lastLoanRepayments += 1;
     borrower.repaymentsCount += 1;
+    borrower.entityLastUpdated = event.block.timestamp.toI32();
 
     // update full repaid loans and interest
     if (event.params.currentDebt.equals(BigInt.fromI32(0))) {
@@ -445,6 +448,7 @@ export function handleManagerChanged(event: ManagerChanged): void {
             loanManager.loans += 1;
             loan.addedBy = event.params.managerAddress.toHex();
             borrower.lastLoanAddedBy = event.params.managerAddress.toHex();
+            borrower.entityLastUpdated = event.block.timestamp.toI32();
 
             loanManager.save();
             loan.save();
