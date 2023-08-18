@@ -48,6 +48,8 @@ type Borrower @entity {
   repayments: [Repayment!]! @derivedFrom(field: "borrower")
   # number of repayments ever
   repaymentsCount: Int!
+  # timestamp of when the entity was last updated
+  entityLastUpdated: Int!
 }
 
 """
