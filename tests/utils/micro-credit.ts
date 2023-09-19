@@ -9,6 +9,7 @@ import {
     UserAddressChanged
 } from '../../generated/MicroCredit/MicroCredit';
 import { newMockEvent } from 'matchstick-as/assembly/defaults';
+import { clientAddresses } from '../../src/addresses';
 
 // createLoanAddedEvent
 export function createLoanAddedEvent(
@@ -22,6 +23,7 @@ export function createLoanAddedEvent(
 ): LoanAdded {
     const loanAddedEvent = changetype<LoanAdded>(newMockEvent());
 
+    loanAddedEvent.address = Address.fromString(clientAddresses[1]);
     loanAddedEvent.block.number = BigInt.fromI32(17089332);
     loanAddedEvent.transaction.from = Address.fromString(managerAddress);
     loanAddedEvent.parameters = [];
@@ -55,6 +57,7 @@ export function createLoanAddedEvent(
 export function createLoanClaimedEvent(userAddress: string, loanId: BigInt): LoanClaimed {
     const loanClaimedEvent = changetype<LoanClaimed>(newMockEvent());
 
+    loanClaimedEvent.address = Address.fromString(clientAddresses[1]);
     loanClaimedEvent.block.timestamp = BigInt.fromI32(1685132181);
     loanClaimedEvent.parameters = [];
     const userAddressParam = new ethereum.EventParam(
@@ -73,6 +76,7 @@ export function createLoanClaimedEvent(userAddress: string, loanId: BigInt): Loa
 export function createUserAddressChangedEvent(oldWalletAddress: string, newWalletAddress: string): UserAddressChanged {
     const userAddressChangedEvent = changetype<UserAddressChanged>(newMockEvent());
 
+    userAddressChangedEvent.address = Address.fromString(clientAddresses[1]);
     userAddressChangedEvent.parameters = [];
     const oldWalletAddressParam = new ethereum.EventParam(
         'oldWalletAddress',
@@ -92,6 +96,7 @@ export function createUserAddressChangedEvent(oldWalletAddress: string, newWalle
 export function createManagerAddedEvent(managerAddress: string): ManagerAdded {
     const userManagerAddedEvent = changetype<ManagerAdded>(newMockEvent());
 
+    userManagerAddedEvent.address = Address.fromString(clientAddresses[1]);
     userManagerAddedEvent.parameters = [];
     const managerAddressParam = new ethereum.EventParam(
         'managerAddress',
@@ -106,6 +111,7 @@ export function createManagerAddedEvent(managerAddress: string): ManagerAdded {
 export function createManagerRemovedEvent(managerAddress: string): ManagerRemoved {
     const userManagerRemovedEvent = changetype<ManagerRemoved>(newMockEvent());
 
+    userManagerRemovedEvent.address = Address.fromString(clientAddresses[1]);
     userManagerRemovedEvent.parameters = [];
     const managerAddressParam = new ethereum.EventParam(
         'managerAddress',
@@ -125,6 +131,7 @@ export function createRepaymentAddedEvent(
 ): RepaymentAdded {
     const repaymentAddedEvent = changetype<RepaymentAdded>(newMockEvent());
 
+    repaymentAddedEvent.address = Address.fromString(clientAddresses[1]);
     repaymentAddedEvent.block.timestamp = BigInt.fromI32(1685132181);
     repaymentAddedEvent.parameters = [];
     const userAddressParam = new ethereum.EventParam(

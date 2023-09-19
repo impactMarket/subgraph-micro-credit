@@ -14,6 +14,11 @@ dataSources:
       apiVersion: 0.0.5
       language: wasm/assemblyscript
       entities:
+        - Asset
+        - Borrower
+        - Loan
+        - Repayment
+        - AverageValue
         - MicroCredit
         - LoanManager
       abis:

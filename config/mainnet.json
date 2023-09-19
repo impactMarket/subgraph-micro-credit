@@ -1,6 +1,7 @@
 {
     "startBlock": 18607411,
     "network": "celo",
-    "MicroCredit": "0xEa4D67c757a6f50974E7fd7B5b1cc7e7910b80Bb",
-    "cUSD": "0x765DE816845861e75A25fCA122bb6898B8B1282a"
+    "MicroCredit": "0xea4d67c757a6f50974e7fd7b5b1cc7e7910b80bb",
+    "MicroCreditClient3": "",
+    "cUSD": "0x765de816845861e75a25fca122bb6898b8b1282a"
 }

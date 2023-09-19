@@ -1,6 +1,6 @@
 type Asset @entity {
   """
-  {{ key }}-{{ tokenAddress }}-{{ dayId }} for MicroCredit
+  {{ clientId }}-{{ key }}-{{ tokenAddress }}-{{ dayId }} for MicroCredit
   """
   id: ID!
   # asset
@@ -17,6 +17,8 @@ type Borrower @entity {
   borrower id
   """
   id: ID!
+  # client id (see the list)
+  clientId: Int!
   # borrower loans
   loans: [Loan!]! @derivedFrom(field: "borrower")
   # number of loans
@@ -56,7 +58,7 @@ type Borrower @entity {
 Loan entity
 """
 type Loan @entity {
-  # loan id {userAdreress}-{loanId}
+  # loan id {{ userAdreress }}-{{ loanId }}
   id: ID!
   # loan index
   index: Int!
@@ -85,7 +87,7 @@ type Loan @entity {
 }
 
 type Repayment @entity {
-  # repayment id {borrower}-{loanId}-{repaymentId}
+  # repayment id {{ borrower }}-{{ loanId }}-{{ repaymentId }}
   id: ID!
   # borrower
   borrower: Borrower!
@@ -113,8 +115,10 @@ MicroCredit global data
 For efficiency reasons, all values are nullable
 """
 type MicroCredit @entity {
-  # id: 0 is for global data, otherwise, {dayId}
+  # id: {{ clientId }}-0 is for global data, otherwise, {{ clientId }}-{{ dayId }}
   id: ID!
+  # client id (see the list)
+  clientId: Int!
 
   # amount borrowed in each currency
   borrowed: [Asset!]
@@ -146,6 +150,8 @@ type LoanManager @entity {
   manager id
   """
   id: ID!
+  # client id (see the list)
+  clientId: Int!
   # manager state
   state: Int!
   # number of borrowers being managed

@@ -92,6 +92,15 @@ export class Borrower extends Entity {
     this.set("id", Value.fromString(value));
   }
 
+  get clientId(): i32 {
+    let value = this.get("clientId");
+    return value!.toI32();
+  }
+
+  set clientId(value: i32) {
+    this.set("clientId", Value.fromI32(value));
+  }
+
   get loans(): Array<string> {
     let value = this.get("loans");
     return value!.toStringArray();
@@ -570,6 +579,15 @@ export class MicroCredit extends Entity {
     this.set("id", Value.fromString(value));
   }
 
+  get clientId(): i32 {
+    let value = this.get("clientId");
+    return value!.toI32();
+  }
+
+  set clientId(value: i32) {
+    this.set("clientId", Value.fromI32(value));
+  }
+
   get borrowed(): Array<string> | null {
     let value = this.get("borrowed");
     if (!value || value.kind == ValueKind.NULL) {
@@ -737,6 +755,15 @@ export class LoanManager extends Entity {
 
   set id(value: string) {
     this.set("id", Value.fromString(value));
+  }
+
+  get clientId(): i32 {
+    let value = this.get("clientId");
+    return value!.toI32();
+  }
+
+  set clientId(value: i32) {
+    this.set("clientId", Value.fromI32(value));
   }
 
   get state(): i32 {
