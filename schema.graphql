@@ -76,12 +76,12 @@ type Loan @entity {
   lastRepayment: Int
   # amount paid on last repayment (normalized)
   lastRepaymentAmount: BigDecimal
+  # number of repayments
+  repaymentsCount: Int!
   # debt after the last repayment (normalized)
   lastDebt: BigDecimal
   # manager adding the loan
   addedBy: LoanManager!
-  # number of repayments
-  repaymentsCount: Int!
 }
 
 type Repayment @entity {
@@ -89,6 +89,8 @@ type Repayment @entity {
   id: ID!
   # borrower
   borrower: Borrower!
+  # loan
+  loan: Loan!
   # amount paid (normalized)
   amount: BigDecimal!
   # timestamp
@@ -150,4 +152,8 @@ type LoanManager @entity {
   borrowers: Int!
   # number of loans ever managed (current + repaid)
   loans: Int!
+  # limit that the loan manager can lend
+  loanLimitAmount: BigDecimal!
+  # amount currently lent
+  currentlyLentAmount: BigDecimal!
 }

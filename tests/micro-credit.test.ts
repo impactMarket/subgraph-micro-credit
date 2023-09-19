@@ -204,3 +204,5 @@ test('[handleRepaymentAdded]', () => {
     assert.fieldEquals('MicroCredit', '0', 'interest', `[interest-${cUSDAddress}-0]`);
     assert.fieldEquals('Asset', `interest-${cUSDAddress}-0`, 'amount', '1');
 });
+
+// TODO: add loan, change loan manager and remove first manager
