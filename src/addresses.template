@@ -1,3 +1,4 @@
 const cUSDAddress: string = '{{cUSD}}';
+const clientAddresses: string[] = ['', '{{MicroCredit}}', '', '{{MicroCreditClient3}}'];
 
-export { cUSDAddress };
+export { cUSDAddress, clientAddresses };

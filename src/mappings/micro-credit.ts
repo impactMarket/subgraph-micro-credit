@@ -10,7 +10,7 @@ import {
     RepaymentAdded,
     UserAddressChanged
 } from '../../generated/MicroCredit/MicroCredit';
-import { cUSDAddress } from '../addresses';
+import { cUSDAddress, clientAddresses } from '../addresses';
 
 export const normalize = (amount: string): BigDecimal =>
     BigDecimal.fromString(amount).div(BigDecimal.fromString('1000000000000000000'));
@@ -126,6 +126,7 @@ export function handleLoanAdded(event: LoanAdded): void {
         borrower.loansCount = 0;
         // borrower.repayments = new Array<string>();
         borrower.repaymentsCount = 0;
+        borrower.clientId = clientAddresses.indexOf(event.address.toHex());
     }
 
     borrower.lastLoanStatus = 0;
@@ -146,7 +147,7 @@ export function handleLoanAdded(event: LoanAdded): void {
     borrower.lastLoanRepaid = BigDecimal.zero();
     borrower.lastLoanAddedBy = event.transaction.from.toHex();
     borrower.lastLoanRepayments = 0;
-    // need to nullify these values
+    // @ts-ignore need to nullify these values
     borrower.lastLoanLastRepayment = null;
     borrower.lastLoanLastRepaymentAmount = null;
     borrower.entityLastUpdated = event.block.timestamp.toI32();
@@ -163,6 +164,7 @@ export function handleLoanClaimed(event: LoanClaimed): void {
     if (!loan) {
         return;
     }
+    const clientId = clientAddresses.indexOf(event.address.toHex());
     const borrower = Borrower.load(event.params.userAddress.toHex())!;
     const loanManagerId = loan.addedBy;
     let loanManager = LoanManager.load(loanManagerId);
@@ -174,6 +176,7 @@ export function handleLoanClaimed(event: LoanClaimed): void {
         loanManager.loans = 0;
         loanManager.loanLimitAmount = BigDecimal.zero();
         loanManager.currentlyLentAmount = BigDecimal.zero();
+        loanManager.clientId = clientId;
     }
 
     // update daily stats
@@ -184,6 +187,7 @@ export function handleLoanClaimed(event: LoanClaimed): void {
         microCreditDaily = new MicroCredit(dayId);
         microCreditDaily.loans = 0;
         microCreditDaily.repaidLoans = 0;
+        microCreditDaily.clientId = clientId;
     }
 
     // load or create new global micro credit entity
@@ -193,19 +197,20 @@ export function handleLoanClaimed(event: LoanClaimed): void {
         microCredit = new MicroCredit('0');
         microCredit.loans = 0;
         microCredit.repaidLoans = 0;
+        microCredit.clientId = clientId;
     }
 
     // update global micro credit entity data
-    const assetBorrowedId = `borrowed-${cUSDAddress}-0`;
-    const assetDebtId = `debt-${cUSDAddress}-0`;
+    const assetBorrowedId = `${clientId}-borrowed-${cUSDAddress}-0`;
+    const assetDebtId = `${clientId}-debt-${cUSDAddress}-0`;
     // const assetLiquidityId = `liquidity-${cUSDAddress}-0`;
-    const avgLoanAmountId = `avgLoanAmount-${cUSDAddress}-0`;
-    const avgLoanPeriodId = `avgLoanPeriod-${cUSDAddress}-0`;
+    const avgLoanAmountId = `${clientId}-avgLoanAmount-${cUSDAddress}-0`;
+    const avgLoanPeriodId = `${clientId}-avgLoanPeriod-${cUSDAddress}-0`;
     // daily
-    const assetBorrowedDailyId = `borrowed-${cUSDAddress}-${dayId}`;
-    const assetDebtDailyId = `debt-${cUSDAddress}-${dayId}`;
-    const avgLoanAmountDailyId = `avgLoanAmount-${cUSDAddress}-${dayId}`;
-    const avgLoanPeriodDailyId = `avgLoanPeriod-${cUSDAddress}-${dayId}`;
+    const assetBorrowedDailyId = `${clientId}-borrowed-${cUSDAddress}-${dayId}`;
+    const assetDebtDailyId = `${clientId}-debt-${cUSDAddress}-${dayId}`;
+    const avgLoanAmountDailyId = `${clientId}-avgLoanAmount-${cUSDAddress}-${dayId}`;
+    const avgLoanPeriodDailyId = `${clientId}-avgLoanPeriod-${cUSDAddress}-${dayId}`;
 
     microCredit.borrowed = updateAsset(assetBorrowedId, cUSDAddress, loan.amount, microCredit.borrowed, false);
     microCredit.debt = updateAsset(assetDebtId, cUSDAddress, loan.amount, microCredit.debt, false);
@@ -301,6 +306,7 @@ export function handleManagerAdded(event: ManagerAdded): void {
         loanManager.loans = 0;
         loanManager.loanLimitAmount = BigDecimal.zero();
         loanManager.currentlyLentAmount = BigDecimal.zero();
+        loanManager.clientId = clientAddresses.indexOf(event.address.toHex());
     }
 
     loanManager.state = 0;
@@ -316,6 +322,7 @@ export function handleManagerAdded1(event: ManagerAdded1): void {
         loanManager.borrowers = 0;
         loanManager.loans = 0;
         loanManager.currentlyLentAmount = BigDecimal.zero();
+        loanManager.clientId = clientAddresses.indexOf(event.address.toHex());
     }
     loanManager.loanLimitAmount = normalize(event.params.currentLentAmountLimit.toString());
 
@@ -340,6 +347,7 @@ export function handleRepaymentAdded(event: RepaymentAdded): void {
         return;
     }
 
+    const clientId = clientAddresses.indexOf(event.address.toHex());
     const loanManager = LoanManager.load(loan.addedBy)!;
     const borrower = Borrower.load(event.params.userAddress.toHex())!;
     const repaymentId = `${event.params.userAddress.toHex()}-${event.params.loanId.toString()}-${borrower.repaymentsCount.toString()}`;
@@ -359,6 +367,7 @@ export function handleRepaymentAdded(event: RepaymentAdded): void {
         microCreditDaily = new MicroCredit(dayId);
         microCreditDaily.loans = 0;
         microCreditDaily.repaidLoans = 0;
+        microCreditDaily.clientId = clientId;
     }
 
     // load or create new global micro credit entity
@@ -368,9 +377,10 @@ export function handleRepaymentAdded(event: RepaymentAdded): void {
         microCredit = new MicroCredit('0');
         microCredit.loans = 0;
         microCredit.repaidLoans = 0;
+        microCredit.clientId = clientId;
     }
 
-    const assetDebtdId = `debt-${cUSDAddress}-0`;
+    const assetDebtdId = `${clientId}-debt-${cUSDAddress}-0`;
 
     // NOTE: on daily states, debt is the debt accrued. Repaid is separated.
     // On global state, debt is the total debt
@@ -411,8 +421,8 @@ export function handleRepaymentAdded(event: RepaymentAdded): void {
         microCreditDaily.repaidLoans += 1;
         borrower.lastLoanStatus = 2;
 
-        const assetInterestdId = `interest-${cUSDAddress}-0`;
-        const assetInterestdDailyId = `interest-${cUSDAddress}-${dayId}`;
+        const assetInterestdId = `${clientId}-interest-${cUSDAddress}-0`;
+        const assetInterestdDailyId = `${clientId}-interest-${cUSDAddress}-${dayId}`;
 
         microCredit.interest = updateAsset(
             assetInterestdId,
@@ -430,8 +440,8 @@ export function handleRepaymentAdded(event: RepaymentAdded): void {
         );
     }
     // update global micro credit entity data
-    const assetRepaidId = `repaid-${cUSDAddress}-0`;
-    const assetRepaidDailyId = `repaid-${cUSDAddress}-${dayId}`;
+    const assetRepaidId = `${clientId}-repaid-${cUSDAddress}-0`;
+    const assetRepaidDailyId = `${clientId}-repaid-${cUSDAddress}-${dayId}`;
 
     microCredit.repaid = updateAsset(
         assetRepaidId,
