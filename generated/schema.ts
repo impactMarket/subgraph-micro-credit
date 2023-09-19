@@ -376,6 +376,15 @@ export class Loan extends Entity {
     }
   }
 
+  get repaymentsCount(): i32 {
+    let value = this.get("repaymentsCount");
+    return value!.toI32();
+  }
+
+  set repaymentsCount(value: i32) {
+    this.set("repaymentsCount", Value.fromI32(value));
+  }
+
   get lastDebt(): BigDecimal | null {
     let value = this.get("lastDebt");
     if (!value || value.kind == ValueKind.NULL) {
@@ -400,15 +409,6 @@ export class Loan extends Entity {
 
   set addedBy(value: string) {
     this.set("addedBy", Value.fromString(value));
-  }
-
-  get repaymentsCount(): i32 {
-    let value = this.get("repaymentsCount");
-    return value!.toI32();
-  }
-
-  set repaymentsCount(value: i32) {
-    this.set("repaymentsCount", Value.fromI32(value));
   }
 }
 
@@ -450,6 +450,15 @@ export class Repayment extends Entity {
 
   set borrower(value: string) {
     this.set("borrower", Value.fromString(value));
+  }
+
+  get loan(): string {
+    let value = this.get("loan");
+    return value!.toString();
+  }
+
+  set loan(value: string) {
+    this.set("loan", Value.fromString(value));
   }
 
   get amount(): BigDecimal {
@@ -755,5 +764,23 @@ export class LoanManager extends Entity {
 
   set loans(value: i32) {
     this.set("loans", Value.fromI32(value));
+  }
+
+  get loanLimitAmount(): BigDecimal {
+    let value = this.get("loanLimitAmount");
+    return value!.toBigDecimal();
+  }
+
+  set loanLimitAmount(value: BigDecimal) {
+    this.set("loanLimitAmount", Value.fromBigDecimal(value));
+  }
+
+  get currentlyLentAmount(): BigDecimal {
+    let value = this.get("currentlyLentAmount");
+    return value!.toBigDecimal();
+  }
+
+  set currentlyLentAmount(value: BigDecimal) {
+    this.set("currentlyLentAmount", Value.fromBigDecimal(value));
   }
 }
