@@ -1,4 +1,4 @@
-import { Address, BigDecimal, BigInt, log, store } from '@graphprotocol/graph-ts';
+import { Address, BigDecimal, BigInt, store } from '@graphprotocol/graph-ts';
 import { Asset, AverageValue, Borrower, Loan, LoanManager, MicroCredit, Repayment } from '../../generated/schema';
 import {
     LoanAdded,
