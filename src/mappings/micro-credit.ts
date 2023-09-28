@@ -123,8 +123,7 @@ export function handleLoanAdded(event: LoanAdded): void {
     if (!borrower) {
         // create borrower entity
         borrower = new Borrower(event.params.userAddress.toHex());
-        borrower.loansCount = 0;
-        // borrower.repayments = new Array<string>();
+        borrower.loansCount = 1;
         borrower.repaymentsCount = 0;
         borrower.clientId = clientAddresses.indexOf(event.address.toHex());
     }
@@ -266,31 +265,48 @@ export function handleUserAddressChanged(event: UserAddressChanged): void {
     const borrowerNewAccount = new Borrower(event.params.newWalletAddress.toHex());
 
     if (borrowerOldAccount) {
-        borrowerNewAccount.merge([borrowerOldAccount]);
-    
-        // for (let i = 0; i < borrowerOldAccount.loans.length; ++i) {
-        //     const oldLoan = Loan.load(borrowerOldAccount.loans[i]);
+        for (let l = 0; l < borrowerOldAccount.loansCount; l++) {
+            const borrowerOldLoanId = `${event.params.oldWalletAddress.toHex()}-${l.toString()}`;
+            const oldLoan = Loan.load(borrowerOldLoanId);
 
-        //     if (oldLoan) {
-        //         const borrowerLoanId = `${event.params.newWalletAddress.toHex()}-${i.toString()}`;
-        //         const newLoan = new Loan(borrowerLoanId);
-        
-        //         newLoan.index = oldLoan.index;
-        //         newLoan.borrower = event.params.newWalletAddress.toHex();
-        //         newLoan.amount = oldLoan.amount;
-        //         newLoan.period = oldLoan.period;
-        //         newLoan.dailyInterest = oldLoan.dailyInterest;
-        //         newLoan.repaid = oldLoan.repaid;
-        //         newLoan.repaymentsCount = oldLoan.repaymentsCount;
-        //         newLoan.addedBy = oldLoan.addedBy;
-        
-        //         newLoan.save();
-        //         store.remove('Loan', oldLoan.id);
-        //     }
-        // }
-    
+            if (!oldLoan) {
+                continue;
+            }
+            const borrowerLoanId = `${event.params.newWalletAddress.toHex()}-${l.toString()}`;
+            const newLoan = new Loan(borrowerLoanId);
+
+            newLoan.merge([oldLoan]);
+
+            newLoan.id = borrowerLoanId;
+            newLoan.borrower = borrowerNewAccount.id;
+
+            newLoan.save();
+
+            // update repayments to each loan
+            for (let r = 0; r < oldLoan.repaymentsCount; r++) {
+                const repaymentId = `${event.params.oldWalletAddress.toHex()}-${oldLoan.index.toString()}-${r.toString()}`;
+                const oldRepayment = Repayment.load(repaymentId);
+
+                if (!oldRepayment) {
+                    continue;
+                }
+                const borrowerRepaymentId = `${event.params.newWalletAddress.toHex()}-${oldLoan.index.toString()}-${r.toString()}`;
+                const newRepayment = new Repayment(borrowerRepaymentId);
+
+                newRepayment.merge([oldRepayment]);
+
+                newRepayment.id = borrowerRepaymentId;
+                newRepayment.borrower = borrowerNewAccount.id;
+
+                newRepayment.save();
+                store.remove('Repayment', oldRepayment.id);
+            }
+            store.remove('Loan', oldLoan.id);
+        }
+
+        borrowerNewAccount.merge([borrowerOldAccount]);
         borrowerNewAccount.id = event.params.newWalletAddress.toHex();
-    
+
         borrowerNewAccount.save();
         store.remove('Borrower', event.params.oldWalletAddress.toHex());
     }
@@ -473,7 +489,7 @@ export function handleManagerChanged(event: ManagerChanged): void {
 
     if (loanManager && borrower) {
         const loan = Loan.load(`${event.params.borrowerAddress.toHex()}-${(borrower.loansCount - 1).toString()}`);
-        
+
         if (loan) {
             const previousLoanManager = LoanManager.load(loan.addedBy)!;
 
