@@ -1,24 +1,34 @@
 import { BigDecimal, BigInt } from '@graphprotocol/graph-ts';
-import { assert, clearStore, test } from 'matchstick-as/assembly/index';
+import { assert, clearStore, logStore, test } from 'matchstick-as/assembly/index';
 import { cUSDAddress, toToken, userAddress } from './utils/contants';
 import {
     createLoanAddedEvent,
     createLoanClaimedEvent,
     createManagerAddedEvent,
+    createManagerChangedEvent,
     createManagerRemovedEvent,
     createRepaymentAddedEvent,
-    createUserAddressChangedEvent
+    createUserAddressChangedEvent,
 } from './utils/micro-credit';
 import {
     handleLoanAdded,
     handleLoanClaimed,
     handleManagerAdded,
+    handleManagerChanged,
     handleManagerRemoved,
     handleRepaymentAdded,
     handleUserAddressChanged
 } from '../src/mappings/micro-credit';
 
-export { handleLoanAdded, handleLoanClaimed, handleUserAddressChanged };
+export { 
+    handleLoanAdded,
+    handleLoanClaimed,
+    handleManagerAdded,
+    handleManagerChanged,
+    handleManagerRemoved,
+    handleRepaymentAdded,
+    handleUserAddressChanged
+ };
 
 test('[handleLoanClaimed] register and claim', () => {
     clearStore();
@@ -204,6 +214,88 @@ test('[handleRepaymentAdded]', () => {
     assert.fieldEquals('Loan', `${userAddress[0]}-0`, 'repaid', '11');
     assert.fieldEquals('MicroCredit', '0', 'interest', `[1-interest-${cUSDAddress}-0]`);
     assert.fieldEquals('Asset', `1-interest-${cUSDAddress}-0`, 'amount', '1');
+});
+
+test('[handleManagerChanged] change manager', () => {
+    clearStore();
+
+    const managerAddedEvent1 = createManagerAddedEvent(userAddress[0]);
+
+    handleManagerAdded(managerAddedEvent1);
+
+    const managerAddedEvent2 = createManagerAddedEvent(userAddress[1]);
+
+    handleManagerAdded(managerAddedEvent2);
+
+    const loanAddedEvent = createLoanAddedEvent(
+        userAddress[2],
+        BigInt.fromI32(0),
+        toToken('10'),
+        BigInt.fromI32(3600 * 24 * 30 * 6),
+        BigInt.fromString(BigDecimal.fromString('0.12').times(BigDecimal.fromString('1000000000000000000')).toString()),
+        BigInt.fromI32(1680267154),
+        userAddress[0]
+    );
+
+    handleLoanAdded(loanAddedEvent);
+    
+    const loanClaimed = createLoanClaimedEvent(userAddress[2], BigInt.fromI32(0));
+    
+    handleLoanClaimed(loanClaimed);
+    
+    const managerChangedEvent = createManagerChangedEvent(userAddress[2], userAddress[1]);
+
+    handleManagerChanged(managerChangedEvent);
+
+    assert.entityCount('LoanManager', 2);
+    assert.fieldEquals('LoanManager', userAddress[0], 'state', '0');
+    assert.fieldEquals('LoanManager', userAddress[0], 'borrowers', '0');
+    assert.fieldEquals('LoanManager', userAddress[1], 'state', '0');
+    assert.fieldEquals('LoanManager', userAddress[1], 'borrowers', '1');
+    assert.fieldEquals('Loan', `${userAddress[2]}-0`, 'addedBy', userAddress[1]);
+});
+
+test('[handleManagerChanged] change manager (repeated)', () => {
+    clearStore();
+
+    const managerAddedEvent1 = createManagerAddedEvent(userAddress[0]);
+
+    handleManagerAdded(managerAddedEvent1);
+
+    const managerAddedEvent2 = createManagerAddedEvent(userAddress[1]);
+
+    handleManagerAdded(managerAddedEvent2);
+
+    const loanAddedEvent = createLoanAddedEvent(
+        userAddress[2],
+        BigInt.fromI32(0),
+        toToken('10'),
+        BigInt.fromI32(3600 * 24 * 30 * 6),
+        BigInt.fromString(BigDecimal.fromString('0.12').times(BigDecimal.fromString('1000000000000000000')).toString()),
+        BigInt.fromI32(1680267154),
+        userAddress[0]
+    );
+
+    handleLoanAdded(loanAddedEvent);
+
+    const loanClaimed = createLoanClaimedEvent(userAddress[2], BigInt.fromI32(0));
+
+    handleLoanClaimed(loanClaimed);
+    
+    const managerChangedEvent = createManagerChangedEvent(userAddress[2], userAddress[1]);
+    
+    handleManagerChanged(managerChangedEvent);
+    
+    const managerChangedEvent2 = createManagerChangedEvent(userAddress[2], userAddress[1]);
+    
+    handleManagerChanged(managerChangedEvent2);
+
+    assert.entityCount('LoanManager', 2);
+    assert.fieldEquals('LoanManager', userAddress[0], 'state', '0');
+    assert.fieldEquals('LoanManager', userAddress[0], 'borrowers', '0');
+    assert.fieldEquals('LoanManager', userAddress[1], 'state', '0');
+    assert.fieldEquals('LoanManager', userAddress[1], 'borrowers', '1');
+    assert.fieldEquals('Loan', `${userAddress[2]}-0`, 'addedBy', userAddress[1]);
 });
 
 // TODO: add loan, change loan manager and remove first manager

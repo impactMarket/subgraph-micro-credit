@@ -4,12 +4,13 @@ import {
     LoanAdded,
     LoanClaimed,
     ManagerAdded,
+    ManagerChanged,
     ManagerRemoved,
     RepaymentAdded,
     UserAddressChanged
 } from '../../generated/MicroCredit/MicroCredit';
-import { newMockEvent } from 'matchstick-as/assembly/defaults';
 import { clientAddresses } from '../../src/addresses';
+import { newMockEvent } from 'matchstick-as/assembly/defaults';
 
 // createLoanAddedEvent
 export function createLoanAddedEvent(
@@ -151,4 +152,25 @@ export function createRepaymentAddedEvent(
     repaymentAddedEvent.parameters.push(currentDebtParam);
 
     return repaymentAddedEvent;
+}
+
+// createManagerChangedEvent(borrowerAddress: string, managerAddress: string);
+export function createManagerChangedEvent(borrowerAddress: string, managerAddress: string): ManagerChanged {
+    const userManagerChangedEvent = changetype<ManagerChanged>(newMockEvent());
+
+    userManagerChangedEvent.address = Address.fromString(clientAddresses[1]);
+    userManagerChangedEvent.parameters = [];
+    const borrowerAddressParam = new ethereum.EventParam(
+        'borrowerAddress',
+        ethereum.Value.fromAddress(Address.fromString(borrowerAddress))
+    );
+    const managerAddressParam = new ethereum.EventParam(
+        'managerAddress',
+        ethereum.Value.fromAddress(Address.fromString(managerAddress))
+    );
+
+    userManagerChangedEvent.parameters.push(borrowerAddressParam);
+    userManagerChangedEvent.parameters.push(managerAddressParam);
+
+    return userManagerChangedEvent;
 }
