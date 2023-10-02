@@ -123,11 +123,12 @@ export function handleLoanAdded(event: LoanAdded): void {
     if (!borrower) {
         // create borrower entity
         borrower = new Borrower(event.params.userAddress.toHex());
-        borrower.loansCount = 1;
+        borrower.loansCount = 0;
         borrower.repaymentsCount = 0;
         borrower.clientId = clientAddresses.indexOf(event.address.toHex());
     }
-
+    
+    borrower.loansCount += 1;
     borrower.lastLoanStatus = 0;
     loan.borrower = event.params.userAddress.toHex();
     loan.amount = normalize(event.params.amount.toString());
@@ -242,7 +243,6 @@ export function handleLoanClaimed(event: LoanClaimed): void {
     loan.claimed = event.block.timestamp.toI32();
     borrower.lastLoanClaimed = event.block.timestamp.toI32();
 
-    borrower.loansCount += 1;
     borrower.lastLoanStatus = 1;
     borrower.entityLastUpdated = event.block.timestamp.toI32();
     if (borrower.loansCount === 1) {
@@ -490,7 +490,7 @@ export function handleManagerChanged(event: ManagerChanged): void {
     if (loanManager && borrower) {
         const loan = Loan.load(`${event.params.borrowerAddress.toHex()}-${(borrower.loansCount - 1).toString()}`);
 
-        if (loan) {
+        if (loan && Address.fromString(loan.addedBy).notEqual(Address.fromString(event.params.managerAddress.toHex()))) {
             const previousLoanManager = LoanManager.load(loan.addedBy)!;
 
             loanManager.borrowers += 1;
