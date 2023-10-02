@@ -155,6 +155,15 @@ export class Borrower extends Entity {
     this.set("lastLoanDailyInterest", Value.fromBigDecimal(value));
   }
 
+  get lastLoanAdded(): i32 {
+    let value = this.get("lastLoanAdded");
+    return value!.toI32();
+  }
+
+  set lastLoanAdded(value: i32) {
+    this.set("lastLoanAdded", Value.fromI32(value));
+  }
+
   get lastLoanClaimed(): i32 {
     let value = this.get("lastLoanClaimed");
     return value!.toI32();
@@ -339,6 +348,15 @@ export class Loan extends Entity {
 
   set dailyInterest(value: BigDecimal) {
     this.set("dailyInterest", Value.fromBigDecimal(value));
+  }
+
+  get added(): i32 {
+    let value = this.get("added");
+    return value!.toI32();
+  }
+
+  set added(value: i32) {
+    this.set("added", Value.fromI32(value));
   }
 
   get claimed(): i32 {
