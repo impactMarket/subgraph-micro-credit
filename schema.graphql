@@ -32,6 +32,8 @@ type Borrower @entity {
   lastLoanPeriod: Int!
   # loan interest (in % / day)
   lastLoanDailyInterest: BigDecimal!
+  # timestamp when the loan was added
+  lastLoanAdded: Int!
   # timestamp if loan was claimed, otherwise null
   lastLoanClaimed: Int
   # amount repaid (normalized)
@@ -70,6 +72,8 @@ type Loan @entity {
   period: Int!
   # loan interest (in % / day)
   dailyInterest: BigDecimal!
+  # timestamp when the loan was added
+  added: Int!
   # timestamp if loan was claimed, otherwise null
   claimed: Int
   # amount repaid (normalized)

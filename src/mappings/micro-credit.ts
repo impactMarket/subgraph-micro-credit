@@ -136,6 +136,7 @@ export function handleLoanAdded(event: LoanAdded): void {
     loan.period = event.params.period.toI32();
     loan.dailyInterest = normalize(event.params.dailyInterest.toString());
     loan.repaid = BigDecimal.zero();
+    loan.added = event.block.timestamp.toI32();
     loan.addedBy = event.transaction.from.toHex();
     loan.repaymentsCount = 0;
     loan.index = event.params.loanId.toI32();
@@ -145,6 +146,7 @@ export function handleLoanAdded(event: LoanAdded): void {
     borrower.lastLoanPeriod = event.params.period.toI32();
     borrower.lastLoanDailyInterest = normalize(event.params.dailyInterest.toString());
     borrower.lastLoanRepaid = BigDecimal.zero();
+    borrower.lastLoanAdded = event.block.timestamp.toI32();
     borrower.lastLoanAddedBy = event.transaction.from.toHex();
     borrower.lastLoanRepayments = 0;
     // @ts-ignore need to nullify these values
