@@ -48,6 +48,48 @@ export class LoanAdded__Params {
   }
 }
 
+export class LoanAdded1 extends ethereum.Event {
+  get params(): LoanAdded1__Params {
+    return new LoanAdded1__Params(this);
+  }
+}
+
+export class LoanAdded1__Params {
+  _event: LoanAdded1;
+
+  constructor(event: LoanAdded1) {
+    this._event = event;
+  }
+
+  get userAddress(): Address {
+    return this._event.parameters[0].value.toAddress();
+  }
+
+  get tokenAddress(): Address {
+    return this._event.parameters[1].value.toAddress();
+  }
+
+  get loanId(): BigInt {
+    return this._event.parameters[2].value.toBigInt();
+  }
+
+  get amount(): BigInt {
+    return this._event.parameters[3].value.toBigInt();
+  }
+
+  get period(): BigInt {
+    return this._event.parameters[4].value.toBigInt();
+  }
+
+  get dailyInterest(): BigInt {
+    return this._event.parameters[5].value.toBigInt();
+  }
+
+  get claimDeadline(): BigInt {
+    return this._event.parameters[6].value.toBigInt();
+  }
+}
+
 export class LoanClaimed extends ethereum.Event {
   get params(): LoanClaimed__Params {
     return new LoanClaimed__Params(this);

@@ -2,6 +2,7 @@ import { Address, BigDecimal, BigInt, store } from '@graphprotocol/graph-ts';
 import { Asset, AverageValue, Borrower, Loan, LoanManager, MicroCredit, Repayment } from '../../generated/schema';
 import {
     LoanAdded,
+    LoanAdded1,
     LoanClaimed,
     ManagerAdded,
     ManagerAdded1,
@@ -105,57 +106,97 @@ function updateAverage(averageId: string, amount: BigDecimal, array: Array<strin
     return newArray;
 }
 
-export function handleLoanAdded(event: LoanAdded): void {
+function _handleLoanAdded(
+    userAddress: Address,
+    loanId: BigInt,
+    amount: BigInt,
+    period: BigInt,
+    dailyInterest: BigInt,
+    blockTimestamp: BigInt,
+    blockNumber: BigInt,
+    transactionFrom: Address,
+    contractAddress: Address
+): void {
     // avoid initial testnet loans causing wrong values
+    // avoid internal loans tests
     if (
-        (cUSDAddress === '0x874069fa1eb16d44d622f2e0ca25eea172369bc1' && event.block.number.toI32() < 17089331) ||
-        event.params.userAddress.equals(Address.fromString('0x53927a9a4908521c637c8b0e68ade32ccfe469cb')) ||
-        event.params.userAddress.equals(Address.fromString('0xa41261d4ad48104aa9c3f81c2e3e4d7fd0a6f160'))
+        (Address.fromString(cUSDAddress).equals(Address.fromString('0x874069fa1eb16d44d622f2e0ca25eea172369bc1')) &&
+            blockNumber.toI32() < 17089331) ||
+        userAddress.equals(Address.fromString('0x53927a9a4908521c637c8b0e68ade32ccfe469cb')) ||
+        userAddress.equals(Address.fromString('0xa41261d4ad48104aa9c3f81c2e3e4d7fd0a6f160'))
     ) {
         return;
     }
     // register loan to LoanAdded entity
-    const borrowerLoanId = `${event.params.userAddress.toHex()}-${event.params.loanId.toString()}`;
+    const borrowerLoanId = `${userAddress.toHex()}-${loanId.toString()}`;
     const loan = new Loan(borrowerLoanId);
 
-    let borrower = Borrower.load(event.params.userAddress.toHex());
+    let borrower = Borrower.load(userAddress.toHex());
 
     if (!borrower) {
         // create borrower entity
-        borrower = new Borrower(event.params.userAddress.toHex());
+        borrower = new Borrower(userAddress.toHex());
         borrower.loansCount = 0;
         borrower.repaymentsCount = 0;
-        borrower.clientId = clientAddresses.indexOf(event.address.toHex());
+        borrower.clientId = clientAddresses.indexOf(contractAddress.toHex());
     }
-    
+
     borrower.loansCount += 1;
     borrower.lastLoanStatus = 0;
-    loan.borrower = event.params.userAddress.toHex();
-    loan.amount = normalize(event.params.amount.toString());
-    loan.lastDebt = normalize(event.params.amount.toString());
-    loan.period = event.params.period.toI32();
-    loan.dailyInterest = normalize(event.params.dailyInterest.toString());
+    loan.borrower = userAddress.toHex();
+    loan.amount = normalize(amount.toString());
+    loan.lastDebt = normalize(amount.toString());
+    loan.period = period >= BigInt.fromI32(i32.MAX_VALUE) ? 0 : period.toI32();
+    loan.dailyInterest = normalize(dailyInterest.toString());
     loan.repaid = BigDecimal.zero();
-    loan.added = event.block.timestamp.toI32();
-    loan.addedBy = event.transaction.from.toHex();
+    loan.added = blockTimestamp.toI32();
+    loan.addedBy = transactionFrom.toHex();
     loan.repaymentsCount = 0;
-    loan.index = event.params.loanId.toI32();
+    loan.index = loanId.toI32();
     //
-    borrower.lastLoanAmount = normalize(event.params.amount.toString());
-    borrower.lastLoanLastDebt = normalize(event.params.amount.toString());
-    borrower.lastLoanPeriod = event.params.period.toI32();
-    borrower.lastLoanDailyInterest = normalize(event.params.dailyInterest.toString());
+    borrower.lastLoanAmount = normalize(amount.toString());
+    borrower.lastLoanLastDebt = normalize(amount.toString());
+    borrower.lastLoanPeriod = loan.period;
+    borrower.lastLoanDailyInterest = normalize(dailyInterest.toString());
     borrower.lastLoanRepaid = BigDecimal.zero();
-    borrower.lastLoanAdded = event.block.timestamp.toI32();
-    borrower.lastLoanAddedBy = event.transaction.from.toHex();
+    borrower.lastLoanAdded = blockTimestamp.toI32();
+    borrower.lastLoanAddedBy = transactionFrom.toHex();
     borrower.lastLoanRepayments = 0;
     // @ts-ignore need to nullify these values
     borrower.lastLoanLastRepayment = null;
     borrower.lastLoanLastRepaymentAmount = null;
-    borrower.entityLastUpdated = event.block.timestamp.toI32();
+    borrower.entityLastUpdated = blockTimestamp.toI32();
 
     loan.save();
     borrower.save();
+}
+
+export function handleLoanAdded(event: LoanAdded): void {
+    _handleLoanAdded(
+        event.params.userAddress,
+        event.params.loanId,
+        event.params.amount,
+        event.params.period,
+        event.params.dailyInterest,
+        event.block.timestamp,
+        event.block.number,
+        event.transaction.from,
+        event.address
+    );
+}
+
+export function handleLoanAdded1(event: LoanAdded1): void {
+    _handleLoanAdded(
+        event.params.userAddress,
+        event.params.loanId,
+        event.params.amount,
+        event.params.period,
+        event.params.dailyInterest,
+        event.block.timestamp,
+        event.block.number,
+        event.transaction.from,
+        event.address
+    );
 }
 
 export function handleLoanClaimed(event: LoanClaimed): void {
@@ -492,7 +533,10 @@ export function handleManagerChanged(event: ManagerChanged): void {
     if (loanManager && borrower) {
         const loan = Loan.load(`${event.params.borrowerAddress.toHex()}-${(borrower.loansCount - 1).toString()}`);
 
-        if (loan && Address.fromString(loan.addedBy).notEqual(Address.fromString(event.params.managerAddress.toHex()))) {
+        if (
+            loan &&
+            Address.fromString(loan.addedBy).notEqual(Address.fromString(event.params.managerAddress.toHex()))
+        ) {
             const previousLoanManager = LoanManager.load(loan.addedBy)!;
 
             loanManager.borrowers += 1;
