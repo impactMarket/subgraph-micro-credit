@@ -27,6 +27,8 @@ dataSources:
       eventHandlers:
         - event: LoanAdded(indexed address,uint256,uint256,uint256,uint256,uint256)
           handler: handleLoanAdded
+        - event: LoanAdded(indexed address,indexed address,uint256,uint256,uint256,uint256,uint256)
+          handler: handleLoanAdded1
         - event: LoanClaimed(indexed address,uint256)
           handler: handleLoanClaimed
         - event: UserAddressChanged(indexed address,indexed address)

@@ -1,5 +1,5 @@
 import { BigDecimal, BigInt } from '@graphprotocol/graph-ts';
-import { assert, clearStore, logStore, test } from 'matchstick-as/assembly/index';
+import { assert, clearStore, test } from 'matchstick-as/assembly/index';
 import { cUSDAddress, toToken, userAddress } from './utils/contants';
 import {
     createLoanAddedEvent,
@@ -8,7 +8,7 @@ import {
     createManagerChangedEvent,
     createManagerRemovedEvent,
     createRepaymentAddedEvent,
-    createUserAddressChangedEvent,
+    createUserAddressChangedEvent
 } from './utils/micro-credit';
 import {
     handleLoanAdded,
@@ -20,7 +20,7 @@ import {
     handleUserAddressChanged
 } from '../src/mappings/micro-credit';
 
-export { 
+export {
     handleLoanAdded,
     handleLoanClaimed,
     handleManagerAdded,
@@ -28,7 +28,7 @@ export {
     handleManagerRemoved,
     handleRepaymentAdded,
     handleUserAddressChanged
- };
+};
 
 test('[handleLoanClaimed] register and claim', () => {
     clearStore();
@@ -238,11 +238,11 @@ test('[handleManagerChanged] change manager', () => {
     );
 
     handleLoanAdded(loanAddedEvent);
-    
+
     const loanClaimed = createLoanClaimedEvent(userAddress[2], BigInt.fromI32(0));
-    
+
     handleLoanClaimed(loanClaimed);
-    
+
     const managerChangedEvent = createManagerChangedEvent(userAddress[2], userAddress[1]);
 
     handleManagerChanged(managerChangedEvent);
@@ -281,13 +281,13 @@ test('[handleManagerChanged] change manager (repeated)', () => {
     const loanClaimed = createLoanClaimedEvent(userAddress[2], BigInt.fromI32(0));
 
     handleLoanClaimed(loanClaimed);
-    
+
     const managerChangedEvent = createManagerChangedEvent(userAddress[2], userAddress[1]);
-    
+
     handleManagerChanged(managerChangedEvent);
-    
+
     const managerChangedEvent2 = createManagerChangedEvent(userAddress[2], userAddress[1]);
-    
+
     handleManagerChanged(managerChangedEvent2);
 
     assert.entityCount('LoanManager', 2);
