@@ -118,12 +118,9 @@ function _handleLoanAdded(
     contractAddress: Address
 ): void {
     // avoid initial testnet loans causing wrong values
-    // avoid internal loans tests
     if (
-        (Address.fromString(cUSDAddress).equals(Address.fromString('0x874069fa1eb16d44d622f2e0ca25eea172369bc1')) &&
-            blockNumber.toI32() < 17089331) ||
-        userAddress.equals(Address.fromString('0x53927a9a4908521c637c8b0e68ade32ccfe469cb')) ||
-        userAddress.equals(Address.fromString('0xa41261d4ad48104aa9c3f81c2e3e4d7fd0a6f160'))
+        Address.fromString(cUSDAddress).equals(Address.fromString('0x874069fa1eb16d44d622f2e0ca25eea172369bc1')) &&
+        blockNumber.toI32() < 17089331
     ) {
         return;
     }
