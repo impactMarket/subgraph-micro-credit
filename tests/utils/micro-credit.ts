@@ -7,7 +7,8 @@ import {
     ManagerChanged,
     ManagerRemoved,
     RepaymentAdded,
-    UserAddressChanged
+    UserAddressChanged,
+    LoanEdited
 } from '../../generated/MicroCredit/MicroCredit';
 import { clientAddresses } from '../../src/addresses';
 import { newMockEvent } from 'matchstick-as/assembly/defaults';
@@ -173,4 +174,52 @@ export function createManagerChangedEvent(borrowerAddress: string, managerAddres
     userManagerChangedEvent.parameters.push(managerAddressParam);
 
     return userManagerChangedEvent;
+}
+
+// createLoanEditedEvent(_userAddress: string, _loanId: BigInt, _newPeriod: BigInt, _newClaimDeadline: BigInt, _newDailyInterest: BigInt, _newLastComputedDebt: BigInt, _newLastComputedDate: BigInt);
+export function createLoanEditedEvent(
+    _userAddress: string,
+    _loanId: BigInt,
+    _newPeriod: BigInt,
+    _newClaimDeadline: BigInt,
+    _newDailyInterest: BigInt,
+    _newLastComputedDebt: BigInt,
+    _newLastComputedDate: BigInt
+): LoanEdited {
+    const loanEditedEvent = changetype<LoanEdited>(newMockEvent());
+
+    loanEditedEvent.address = Address.fromString(clientAddresses[1]);
+    loanEditedEvent.parameters = [];
+    const userAddressParam = new ethereum.EventParam(
+        '_userAddress',
+        ethereum.Value.fromAddress(Address.fromString(_userAddress))
+    );
+    const loanIdParam = new ethereum.EventParam('_loanId', ethereum.Value.fromUnsignedBigInt(_loanId));
+    const newPeriodParam = new ethereum.EventParam('_newPeriod', ethereum.Value.fromUnsignedBigInt(_newPeriod));
+    const newClaimDeadlineParam = new ethereum.EventParam(
+        '_newClaimDeadline',
+        ethereum.Value.fromUnsignedBigInt(_newClaimDeadline)
+    );
+    const newDailyInterestParam = new ethereum.EventParam(
+        '_newDailyInterest',
+        ethereum.Value.fromUnsignedBigInt(_newDailyInterest)
+    );
+    const newLastComputedDebtParam = new ethereum.EventParam(
+        '_newLastComputedDebt',
+        ethereum.Value.fromUnsignedBigInt(_newLastComputedDebt)
+    );
+    const newLastComputedDateParam = new ethereum.EventParam(
+        '_newLastComputedDate',
+        ethereum.Value.fromUnsignedBigInt(_newLastComputedDate)
+    );
+
+    loanEditedEvent.parameters.push(userAddressParam);
+    loanEditedEvent.parameters.push(loanIdParam);
+    loanEditedEvent.parameters.push(newPeriodParam);
+    loanEditedEvent.parameters.push(newClaimDeadlineParam);
+    loanEditedEvent.parameters.push(newDailyInterestParam);
+    loanEditedEvent.parameters.push(newLastComputedDebtParam);
+    loanEditedEvent.parameters.push(newLastComputedDateParam);
+
+    return loanEditedEvent;
 }

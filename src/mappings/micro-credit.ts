@@ -4,6 +4,7 @@ import {
     LoanAdded,
     LoanAdded1,
     LoanClaimed,
+    LoanEdited,
     ManagerAdded,
     ManagerAdded1,
     ManagerChanged,
@@ -553,4 +554,28 @@ export function handleManagerChanged(event: ManagerChanged): void {
             previousLoanManager.save();
         }
     }
+}
+
+export function handleLoanEdited(event: LoanEdited): void {
+    const borrowerLoanId = `${event.params._userAddress.toHex()}-${event.params._loanId.toString()}`;
+    const loan = Loan.load(borrowerLoanId);
+    const borrower = Borrower.load(event.params._userAddress.toHex());
+
+    if (!loan || !borrower) {
+        return;
+    }
+
+    loan.period = event.params._newPeriod.toI32();
+    loan.claimDeadline = event.params._newClaimDeadline.toI32();
+    loan.dailyInterest = normalize(event.params._newDailyInterest.toString());
+    loan.lastDebt = normalize(event.params._newLastComputedDebt.toString());
+    // update borrower last loan entity data
+    borrower.lastLoanPeriod = loan.period;
+    borrower.lastLoanClaimDeadline = loan.claimDeadline;
+    borrower.lastLoanDailyInterest = loan.dailyInterest;
+    borrower.lastLoanLastDebt = loan.lastDebt;
+    borrower.entityLastUpdated = event.block.timestamp.toI32();
+
+    loan.save();
+    borrower.save();
 }

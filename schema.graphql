@@ -30,6 +30,8 @@ type Borrower @entity {
   lastLoanAmount: BigDecimal!
   # loan period (maturation date)
   lastLoanPeriod: Int!
+  # loan claim deadline
+  lastLoanClaimDeadline: Int!
   # loan interest (in % / day)
   lastLoanDailyInterest: BigDecimal!
   # timestamp when the loan was added
@@ -70,6 +72,8 @@ type Loan @entity {
   amount: BigDecimal!
   # loan period (maturation date)
   period: Int!
+  # loan claim deadline
+  claimDeadline: Int!
   # loan interest (in % / day)
   dailyInterest: BigDecimal!
   # timestamp when the loan was added

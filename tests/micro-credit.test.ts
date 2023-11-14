@@ -4,20 +4,22 @@ import { cUSDAddress, toToken, userAddress } from './utils/contants';
 import {
     createLoanAddedEvent,
     createLoanClaimedEvent,
+    createLoanEditedEvent,
     createManagerAddedEvent,
     createManagerChangedEvent,
     createManagerRemovedEvent,
     createRepaymentAddedEvent,
-    createUserAddressChangedEvent
+    createUserAddressChangedEvent,
 } from './utils/micro-credit';
 import {
     handleLoanAdded,
     handleLoanClaimed,
+    handleLoanEdited,
     handleManagerAdded,
     handleManagerChanged,
     handleManagerRemoved,
     handleRepaymentAdded,
-    handleUserAddressChanged
+    handleUserAddressChanged,
 } from '../src/mappings/micro-credit';
 
 export {
@@ -27,7 +29,8 @@ export {
     handleManagerChanged,
     handleManagerRemoved,
     handleRepaymentAdded,
-    handleUserAddressChanged
+    handleUserAddressChanged,
+    handleLoanEdited
 };
 
 test('[handleLoanClaimed] register and claim', () => {
@@ -296,6 +299,46 @@ test('[handleManagerChanged] change manager (repeated)', () => {
     assert.fieldEquals('LoanManager', userAddress[1], 'state', '0');
     assert.fieldEquals('LoanManager', userAddress[1], 'borrowers', '1');
     assert.fieldEquals('Loan', `${userAddress[2]}-0`, 'addedBy', userAddress[1]);
+});
+
+test('[handleLoanEdited]', () => {
+    clearStore();
+
+    const managerAddedEvent = createManagerAddedEvent(userAddress[1]);
+
+    handleManagerAdded(managerAddedEvent);
+
+    const loanAddedEvent = createLoanAddedEvent(
+        userAddress[0],
+        BigInt.fromI32(0),
+        toToken('10'),
+        BigInt.fromI32(3600 * 24 * 30 * 6),
+        BigInt.fromString(BigDecimal.fromString('0.12').times(BigDecimal.fromString('1000000000000000000')).toString()),
+        BigInt.fromI32(1680267154),
+        userAddress[1]
+    );
+
+    handleLoanAdded(loanAddedEvent);
+
+    const loanClaimed = createLoanClaimedEvent(userAddress[0], BigInt.fromI32(0));
+
+    handleLoanClaimed(loanClaimed);
+
+    const loanEditedEvent = createLoanEditedEvent(
+        userAddress[0],
+        BigInt.fromI32(0),
+        BigInt.fromI32(3600 * 24 * 30 * 8),
+        BigInt.fromI32(1680267155),
+        BigInt.fromString(BigDecimal.fromString('0.13').times(BigDecimal.fromString('1000000000000000000')).toString()),
+        toToken('0.1'),
+        BigInt.fromI32(1680267154)
+    );
+
+    handleLoanEdited(loanEditedEvent);
+
+    assert.fieldEquals('Loan', `${userAddress[0]}-0`, 'period', (3600 * 24 * 30 * 8).toString());
+    assert.fieldEquals('Loan', `${userAddress[0]}-0`, 'repaid', '0');
+    assert.fieldEquals('Loan', `${userAddress[0]}-0`, 'interest', '0.13');
 });
 
 // TODO: add loan, change loan manager and remove first manager

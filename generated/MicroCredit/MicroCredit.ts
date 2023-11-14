@@ -244,6 +244,48 @@ export class ManagerChanged__Params {
   }
 }
 
+export class LoanEdited extends ethereum.Event {
+  get params(): LoanEdited__Params {
+    return new LoanEdited__Params(this);
+  }
+}
+
+export class LoanEdited__Params {
+  _event: LoanEdited;
+
+  constructor(event: LoanEdited) {
+    this._event = event;
+  }
+
+  get _userAddress(): Address {
+    return this._event.parameters[0].value.toAddress();
+  }
+
+  get _loanId(): BigInt {
+    return this._event.parameters[1].value.toBigInt();
+  }
+
+  get _newPeriod(): BigInt {
+    return this._event.parameters[2].value.toBigInt();
+  }
+
+  get _newClaimDeadline(): BigInt {
+    return this._event.parameters[3].value.toBigInt();
+  }
+
+  get _newDailyInterest(): BigInt {
+    return this._event.parameters[4].value.toBigInt();
+  }
+
+  get _newLastComputedDebt(): BigInt {
+    return this._event.parameters[5].value.toBigInt();
+  }
+
+  get _newLastComputedDate(): BigInt {
+    return this._event.parameters[6].value.toBigInt();
+  }
+}
+
 export class MicroCredit extends ethereum.SmartContract {
   static bind(address: Address): MicroCredit {
     return new MicroCredit("MicroCredit", address);

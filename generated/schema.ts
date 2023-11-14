@@ -146,6 +146,15 @@ export class Borrower extends Entity {
     this.set("lastLoanPeriod", Value.fromI32(value));
   }
 
+  get lastLoanClaimDeadline(): i32 {
+    let value = this.get("lastLoanClaimDeadline");
+    return value!.toI32();
+  }
+
+  set lastLoanClaimDeadline(value: i32) {
+    this.set("lastLoanClaimDeadline", Value.fromI32(value));
+  }
+
   get lastLoanDailyInterest(): BigDecimal {
     let value = this.get("lastLoanDailyInterest");
     return value!.toBigDecimal();
@@ -339,6 +348,15 @@ export class Loan extends Entity {
 
   set period(value: i32) {
     this.set("period", Value.fromI32(value));
+  }
+
+  get claimDeadline(): i32 {
+    let value = this.get("claimDeadline");
+    return value!.toI32();
+  }
+
+  set claimDeadline(value: i32) {
+    this.set("claimDeadline", Value.fromI32(value));
   }
 
   get dailyInterest(): BigDecimal {
